@@ -596,12 +596,6 @@ class Drone(object):
 		if self.NavDataCount>0 and self.State[31]==1:
 			self.at("REF", [290717952]) #290717952=10001010101000000000100000000
 
-
-	def emergency(self):
-		# shuts down drone immediately. don't use if drone is high up
-		self.at("REF", [290717952])  # 290717952=10001010101000000000100000000
-
-
 	def thrust(self, fl, fr, rl, rr):	# Controls engines directly, overriding control loops.
 		fl *= 2
 		if fl > 64000:	fl = 64000
