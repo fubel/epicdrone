@@ -35,10 +35,13 @@ while CDC == drone.ConfigDataCount:    time.sleep(0.01)        # Wait until conf
 
 # Get detections
 stop = False
+print("looking for markers")
 while not stop:
     NDC = drone.NavDataCount
-    while NDC == drone.NavDataCount:   time.sleep(0.01)
-    if drone.getKey():                 stop = True
+    while NDC == drone.NavDataCount:
+        time.sleep(0.01)
+    if drone.getKey():
+        stop = True
     # Loop ends when key was pressed
     tagNum = drone.NavData["vision_detect"][0]                 # Number of found tags
     tagX =   drone.NavData["vision_detect"][2]                 # Horizontal position(s)
@@ -46,8 +49,17 @@ while not stop:
     tagZ =   drone.NavData["vision_detect"][6]                 # Distance(s)
     tagRot = drone.NavData["vision_detect"][7]                 # Orientation(s)
 
+    sys.stdout.write("\033[F")
+    sys.stdout.write("\033[K")
+    print "No tag detected"
+
     # Show detections
     if tagNum:
         for i in range (0,tagNum):
+            sys.stdout.write("\033[F")
+            sys.stdout.write("\033[K")
             print "Tag no "+str(i)+" : X= "+str(tagX[i])+"  Y= "+str(tagY[i])+"  Dist= "+str(tagZ[i])+"  Orientation= "+str(tagRot[i])
-else: print "No tag detected"
+    else:
+        sys.stdout.write("\033[F")
+        sys.stdout.write("\033[K")
+        print "No tag detected"
