@@ -19,20 +19,24 @@ class Drone():
         print "emergency"
 
 drone = Drone()
-safety = True
+lock = False
+
+
+def on_click(xbox_key, drone_action):
+    """
+    Wrapper that takes an xbox key(e.g. joy.Back()), performs the drone action and then blocks the key
+    Args:
+        xbox_key: a function for an xbox.Joystick()
+        drone_action: action to perform by the drone
+    """
+    if xbox_key():
+        drone_action()
+        while xbox_key():
+            pass
+
 
 while not joy.Back():
-    if joy.connected():
-        print "Connected"
-    else:
-        print "Disconnected"
-    if joy.X():
-        if safety:
-            drone.startup()
-            safety = False
-        else:
-            drone.takeoff()
-    if joy.B():
-        drone.emergency()
-        safety = True
+    on_click(joy.Start, drone.startup)
+    on_click(joy.A, drone.takeoff)
+    on_click(joy.X, drone.emergency)
 joy.close()
