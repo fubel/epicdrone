@@ -60,5 +60,7 @@ print "Camera dist, rvecs, tvecs", dist, rvecs, tvecs
 # Save camera matrix and distortion coefficients to be used later
 np.save('cam_broke_mtx', mtx)
 np.save('cam_broke_dist', dist)
+np.save('cam_broke_rvecs', rvecs)
+np.save('cam_broke_tvecs', tvecs)
 
 cv2.destroyAllWindows()
