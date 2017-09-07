@@ -4,6 +4,8 @@ import ps_drone
 #drone = ps_drone.Drone()
 joy = xbox.Joystick()
 
+print "Controller initialized"
+
 class Drone():
     # dummy
     def __init__(self):
@@ -23,7 +25,7 @@ class Drone():
 
 
 drone = Drone()
-lock = False
+unlocked = False
 
 
 def block(xbox_key):
@@ -31,29 +33,33 @@ def block(xbox_key):
     while xbox_key():
         pass
 
+print "You have to startup the drone by pressing START"
 
 while not joy.Back():
     # startup:
     if joy.Start():
         drone.startup()
+        unlocked = True
         block(joy.Start)
 
-    # takeoff:
-    if joy.A():
-        drone.takeoff()
-        block(joy.A)
+    if unlocked:
+        # takeoff:
+        if joy.A():
+            drone.takeoff()
+            block(joy.A)
 
-    # emergency:
-    if joy.X():
-        drone.emergency()
-        block(joy.X)
+        # emergency:
+        if joy.X():
+            drone.emergency()
+            block(joy.X)
 
-    # reset:
-    if joy.B():
-        drone.reset()
-        block(joy.B)
+        # reset:
+        if joy.B():
+            drone.reset()
+            block(joy.B)
 
-    if joy.leftX():
-        print joy.leftX()
+        if joy.leftX():
+            print joy.leftX()
+
 
 joy.close()
