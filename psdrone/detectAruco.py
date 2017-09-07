@@ -24,6 +24,8 @@ drone.startVideo()					# Start video-function
 IMC = 	 drone.VideoImageCount		# Number of encoded videoframes
 stop =	 False
 
+logs = []
+
 while(True):
     # Capture frame-by-frame
     while drone.VideoImageCount == IMC: time.sleep(0.01)  # Wait until the next video-frame
@@ -45,15 +47,26 @@ while(True):
         #lists of ids and the corners beloning to each id
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
     print(corners)
-
     gray = aruco.drawDetectedMarkers(gray, corners)
+
+    # use calibration values to detect pose
+    mtx = np.load('cam_broke_mtx.npy')
+    dist = np.load('cam_broke_dist.npy')
+    rvecs = np.load('cam_broke_rvecs.npy')
+    tvecs = np.load('cam_broke_tvecs.npy')
+
+    rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.25, mtx, dist, rvecs, tvecs)
+    for i, id in enumerate(ids):
+        gray = cv2.aruco.drawAxis(gray, mtx, dist, rvecs[i], tvecs[i], 0.25)
+        print rvecs[i], tvecs[i]
+        logs.append([corners, rvecs[i], tvecs[i]])
 
     #print(rejectedImgPoints)
     # Display the resulting frame
     cv2.imshow('frame',gray)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) and (drone.getKey() == ' '):
         break
 
 # When everything done, release the capture
-cap.release()
+np.save('logs.npy', logs)
 cv2.destroyAllWindows()
