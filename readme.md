@@ -21,7 +21,7 @@ Now you should be ready to get the drone video by using the ``psdrone/useVideo.p
 
     data = np.load("logs.npy")
 
-data contains an array with measurements per marker.
-Every measurement consist of three objects:
-First object is an array of x/y coordinates of the detected markers.
-Second oject is rvecs and third is tvecs.
+data contains an array with measurements per marker.  
+Every measurement consist of three objects:  
+First object is an array of x/y coordinates of the detected markers.  
+Second oject is rvecs and third is tvecs.  
