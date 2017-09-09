@@ -5,7 +5,6 @@ from mpl_toolkits.mplot3d import proj3d
 from matplotlib.patches import FancyArrowPatch
 
 
-
 class Arrow3D(FancyArrowPatch):
     def __init__(self, xs, ys, zs, *args, **kwargs):
         FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
@@ -106,7 +105,7 @@ class DummyDrone(object):
         if observable:
             m = 1.0/len(measurements) * sum(measurements.values())
             print("Measured (fused): %s" % m)
-            self.estimated_position = 0.5*(self.estimated_position + m)
+            self.estimated_position = 0.33*(self.estimated_position + 2*m)
         print("Current estimated position: %s" % self.estimated_position)
         print("Current error: %s" % self.error)
 
@@ -115,13 +114,14 @@ D = DummyDrone(np.array([3.5, 1., 2.]), 0)
 
 movements = [np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]),
              np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
-             np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0])]
+             np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
+             np.array([0, 0, -1])]
 
 plt.ion()
 fig = plt.figure(figsize=(14,12))
 ax = fig.add_subplot(111, projection='3d')
 
-for movement in movements:
+for c, movement in enumerate(movements):
     ax.set_xlim(0, 7)
     ax.set_ylim(0, 4)
     ax.set_zlim(0, 3)
@@ -150,6 +150,9 @@ for movement in movements:
             ax.add_artist(arw3)
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles, labels)
-    fig.canvas.draw()
-    time.sleep(2)
-    ax.clear()
+    if c == len(movements) - 1:
+        plt.show()
+    else:
+        fig.canvas.draw()
+        time.sleep(1)
+        ax.clear()
