@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import time
 from mpl_toolkits.mplot3d import proj3d
 from matplotlib.patches import FancyArrowPatch
+from scipy.stats import norm
 
 
 class Arrow3D(FancyArrowPatch):
@@ -93,8 +94,7 @@ class DummyDrone(object):
     def measure(self):
         """
         Goes through the list of observable landmarks, measures "perfect" distance and distorts it.
-        Then, it fuses the distorted measurements into one new measurement and combines this with
-        the current estimated position.
+        Then, it fuses the distorted measurements into one new measurement
         """
         measurements = {}
         observable = self.observable_landmarks()
@@ -105,18 +105,65 @@ class DummyDrone(object):
         if observable:
             m = 1.0/len(measurements) * sum(measurements.values())
             print("Measured (fused): %s" % m)
-            self.estimated_position = 0.33*(self.estimated_position + 2*m)
+            return m
+        else:
+            return None
+
+    def update(self, m):
+        """
+        Combines measurement with the current estimated position.
+        """
+        if m != None:
+            self.estimated_position = (self.estimated_position + 2 * m) / 3.
         print("Current estimated position: %s" % self.estimated_position)
         print("Current mean squared error: %s" % self.error)
 
+
+class Kalman1D(object):
+    """
+    Here, we assume that we only track the x-position and fix y and z.
+    Additionally, we work with Gaussian probabilities and assume the problem is linear (which it isn't)
+    """
+    def __init__(self, drone):
+        self.drone = drone
+        self.state = (drone.real_position[0], 0.2)
+        self.movement_var = 0.2
+        self.posterior = 0
+        print("Initialized 1D Kalman-Filter with Drone %s" % self.drone)
+
+    @staticmethod
+    def gaussian_multiply(g1, g2):
+        mu1, var1 = g1
+        mu2, var2 = g2
+        mean = (var1 * mu2 + var2 * mu1) / (var1 + var2)
+        variance = (var1 * var2) / (var1 + var2)
+        return mean, variance
+
+    def predict(self, movement):
+        # simulate movement
+        self.drone.move(movement)
+        # movement as Gaussian distribution
+        M = (movement[0], self.movement_var)
+        self.state = (self.state[0] + M[0], self.state[1] + M[1])
+        print("Current estimated state: %s" % str(self.state))
+
+    def update(self, measurement):
+        M = (measurement[0], 0.2)
+        self.state = self.gaussian_multiply(M, self.state)
+        print("Current estimated state: %s" % str(self.state))
+
+
 # initialize Drone
 D = DummyDrone(np.array([3.5, 1., 2.]), 0)
+K = Kalman1D(D)
 
 movements = [np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]),
              np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
              np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
              np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0])]
 
+# mesh for kalman gaussian vis
+x = np.linspace(D.x_range[0], D.x_range[1], 500)
 plt.ion()
 fig = plt.figure(figsize=(14,12))
 ax = fig.add_subplot(111, projection='3d')
@@ -126,12 +173,18 @@ while True:
         ax.set_xlim(0, 7)
         ax.set_ylim(0, 4)
         ax.set_zlim(0, 3)
-        D.move(movement)
-        D.measure()
+        K.predict(movement)
+        m = D.measure()
+        K.update(m)
+        D.update(m)
         ax.scatter(D.real_position[0], D.real_position[1], D.real_position[2], zdir='y', c='red', label='real position')
         ax.scatter(D.estimated_position[0], D.estimated_position[1],
                    D.estimated_position[2], zdir='y', c='gray', label='estimated position')
+        ax.scatter(K.state[0], D.real_position[1],
+                   D.real_position[2], zdir='y', c='green', label='Kalman estimation')
         ax.scatter(0, 0, 0, zdir='y')
+        rv = norm(loc=K.state[0], scale=K.state[1])
+        ax.plot(x, rv.pdf(x), zdir='y')
         dir = np.array([0, 0, 1], dtype=np.float32)
         dir = 1 / (2*np.linalg.norm(dir)) * dir
         arw = Arrow3D.arrow(np.array([0, 0, 0]), D.real_position, color='red', lw=3)
@@ -158,5 +211,5 @@ while True:
         ax.text(5, 12, 0, textstr, transform=ax.transAxes, fontsize=14,
                 verticalalignment='top', bbox=props)
         fig.canvas.draw()
-        time.sleep(4)
+        time.sleep(1)
         ax.clear()
