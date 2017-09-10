@@ -2,6 +2,8 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import matplotlib
+matplotlib.rcParams['backend'] = "TkAgg"
 import matplotlib.pyplot as plt
 import time
 import logging
