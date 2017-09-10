@@ -1,9 +1,18 @@
+from __future__ import division
+from __future__ import print_function
+
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import logging
+
 from mpl_toolkits.mplot3d import proj3d
 from matplotlib.patches import FancyArrowPatch
 from scipy.stats import norm
+
+
+# logging settings:
+logging.basicConfig(level=logging.INFO)
 
 
 class Arrow3D(FancyArrowPatch):
@@ -54,7 +63,7 @@ class DummyDrone(object):
         self.movement_cov = np.array([[0.01, 0, 0], [0, 0.01, 0], [0, 0, 0.01]])
         self.process_cov = np.array([[0.1, 0, 0], [0, 0.5, 0], [0, 0, 0.5]])
 
-        print("Initialized DummyDrone with position %s") % self.real_position
+        logging.info("Initialized DummyDrone with position %s" % self.real_position)
 
     @property
     def error(self):
@@ -66,12 +75,12 @@ class DummyDrone(object):
         Args:
             movement (np.array): Perfect movement
         """
-        print("Trying to make movement: %s" % movement)
+        logging.info("Trying to make movement: %s" % movement)
         # draw from noisy distribution centered around movement coordinates to compute real movement
         noisy = np.random.multivariate_normal(movement, self.movement_cov)
         # update the real position by the real movement
         self.real_position += noisy
-        print("Current real position: %s") % self.real_position
+        logging.info("Current real position: %s" % self.real_position)
 
     def observable_landmarks(self):
         """
@@ -104,7 +113,7 @@ class DummyDrone(object):
         # do the simplest possible fusion by averaging:
         if observable:
             m = 1.0/len(measurements) * sum(measurements.values())
-            print("Measured (fused): %s" % m)
+            logging.info("Measured (fused): %s" % m)
             return m
         else:
             return None
@@ -115,21 +124,26 @@ class DummyDrone(object):
         """
         if m != None:
             self.estimated_position = (self.estimated_position + 2 * m) / 3.
-        print("Current estimated position: %s" % self.estimated_position)
-        print("Current mean squared error: %s" % self.error)
+        logging.info("Current estimated position: %s" % self.estimated_position)
+        logging.info("Current mean squared error: %s" % self.error)
 
 
 class Kalman1D(object):
     """
     Here, we assume that we only track the x-position and fix y and z.
     Additionally, we work with Gaussian probabilities and assume the problem is linear (which it isn't)
+
+    # Todo: Track a multivariate state (x, y, z, theta)
+    # Todo: Implement a process model that makes realistic assumptions on drone movement
+    # Todo: Implement a realistic measurement model
+    # Todo: Linearize the non-linearities with EKF
     """
     def __init__(self, drone):
         self.drone = drone
         self.state = (drone.real_position[0], 0.2)
-        self.movement_var = 0.2
+        self.movement_var = 0.8
         self.posterior = 0
-        print("Initialized 1D Kalman-Filter with Drone %s" % self.drone)
+        logging.info("Initialized 1D Kalman-Filter with Drone %s" % self.drone)
 
     @staticmethod
     def gaussian_multiply(g1, g2):
@@ -145,13 +159,19 @@ class Kalman1D(object):
         # movement as Gaussian distribution
         M = (movement[0], self.movement_var)
         self.state = (self.state[0] + M[0], self.state[1] + M[1])
-        print("Current estimated state: %s" % str(self.state))
+        logging.info("Current estimated state: %s" % str(self.state))
 
     def update(self, measurement):
+        x, P = self.state
         if measurement != None:
-            M = (measurement[0], 0.2)
-            self.state = self.gaussian_multiply(M, self.state)
-            print("Current estimated state: %s" % str(self.state))
+            z, R = (measurement[0], 0.2)
+            y = z - x
+            # Now with Kalman gain:
+            Kg = P / (P + R)
+            x = x + Kg*y
+            P = (1 - Kg) * P
+            self.state = (x, P)
+            logging.info("Current estimated state: %s" % str(self.state))
 
 
 # initialize Drone
@@ -166,11 +186,12 @@ movements = [np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 
 # mesh for kalman gaussian vis
 x = np.linspace(D.x_range[0], D.x_range[1], 500)
 plt.ion()
-fig = plt.figure(figsize=(14,12))
+fig = plt.figure(figsize=(14,8))
 ax = fig.add_subplot(111, projection='3d')
-
+#
 while True:
     for movement in movements + movements[::-1]:
+        time_step = 1
         ax.set_xlim(0, 7)
         ax.set_ylim(0, 4)
         ax.set_zlim(0, 3)
@@ -185,7 +206,7 @@ while True:
                    D.real_position[2], zdir='y', c='green', label='Kalman estimation')
         ax.scatter(0, 0, 0, zdir='y')
         rv = norm(loc=K.state[0], scale=K.state[1])
-        ax.plot(x, rv.pdf(x), zdir='y')
+        ax.plot(x, rv.pdf(x), zdir='y', label='Kalman Filter belief')
         dir = np.array([0, 0, 1], dtype=np.float32)
         dir = 1 / (2*np.linalg.norm(dir)) * dir
         arw = Arrow3D.arrow(np.array([0, 0, 0]), D.real_position, color='red', lw=3)
@@ -205,7 +226,7 @@ while True:
                 ax.add_artist(arw3)
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles, labels)
-        textstr = '$MSE = $ %s' % D.error
+        textstr = '$MSE_A = $%s, $MSE_K = $%s' % (D.error, (D.real_position[0] - K.state[0])**2)
         # these are matplotlib.patch.Patch properties
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         # place a text box in upper left in axes coords
@@ -214,3 +235,4 @@ while True:
         fig.canvas.draw()
         time.sleep(1)
         ax.clear()
+
