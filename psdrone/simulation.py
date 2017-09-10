@@ -148,9 +148,10 @@ class Kalman1D(object):
         print("Current estimated state: %s" % str(self.state))
 
     def update(self, measurement):
-        M = (measurement[0], 0.2)
-        self.state = self.gaussian_multiply(M, self.state)
-        print("Current estimated state: %s" % str(self.state))
+        if measurement != None:
+            M = (measurement[0], 0.2)
+            self.state = self.gaussian_multiply(M, self.state)
+            print("Current estimated state: %s" % str(self.state))
 
 
 # initialize Drone
@@ -179,7 +180,7 @@ while True:
         D.update(m)
         ax.scatter(D.real_position[0], D.real_position[1], D.real_position[2], zdir='y', c='red', label='real position')
         ax.scatter(D.estimated_position[0], D.estimated_position[1],
-                   D.estimated_position[2], zdir='y', c='gray', label='estimated position')
+                   D.estimated_position[2], zdir='y', c='gray', label='Average estimation')
         ax.scatter(K.state[0], D.real_position[1],
                    D.real_position[2], zdir='y', c='green', label='Kalman estimation')
         ax.scatter(0, 0, 0, zdir='y')
