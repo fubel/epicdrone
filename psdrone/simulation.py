@@ -6,6 +6,7 @@ from matplotlib.patches import FancyArrowPatch
 
 
 class Arrow3D(FancyArrowPatch):
+    """ This class extends the 2D arrows for vectors to 3D arrows. """
     def __init__(self, xs, ys, zs, *args, **kwargs):
         FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
         self._verts3d = xs, ys, zs
@@ -48,15 +49,15 @@ class DummyDrone(object):
         self.z_range = (0, 4)
 
         # noises
-        self.measurement_cov = np.array([[0.001, 0, 0], [0, 0.001, 0], [0, 0, 0.001]])
-        self.movement_cov = np.array([[0.001, 0, 0], [0, 0.001, 0], [0, 0, 0.001]])
-        self.process_cov = np.array([[0.5, 0, 0], [0, 0.5, 0], [0, 0, 0.5]])
+        self.measurement_cov = np.array([[0.01, 0, 0], [0, 0.01, 0], [0, 0, 0.01]])
+        self.movement_cov = np.array([[0.01, 0, 0], [0, 0.01, 0], [0, 0, 0.01]])
+        self.process_cov = np.array([[0.1, 0, 0], [0, 0.5, 0], [0, 0, 0.5]])
 
         print("Initialized DummyDrone with position %s") % self.real_position
 
     @property
     def error(self):
-        return np.abs(self.estimated_position - self.real_position)
+        return ((self.estimated_position - self.real_position)**2).mean()
 
     def move(self, movement):
         """
@@ -92,14 +93,13 @@ class DummyDrone(object):
     def measure(self):
         """
         Goes through the list of observable landmarks, measures "perfect" distance and distorts it.
-        Returns:
-            (Fused) measurement
+        Then, it fuses the distorted measurements into one new measurement and combines this with
+        the current estimated position.
         """
         measurements = {}
         observable = self.observable_landmarks()
         for key in observable:
             mean = self.real_position - self.landmarks[key]
-            print(mean)
             measurements[key] = self.landmarks[key] + np.random.multivariate_normal(mean, self.measurement_cov)
         # do the simplest possible fusion by averaging:
         if observable:
@@ -107,7 +107,7 @@ class DummyDrone(object):
             print("Measured (fused): %s" % m)
             self.estimated_position = 0.33*(self.estimated_position + 2*m)
         print("Current estimated position: %s" % self.estimated_position)
-        print("Current error: %s" % self.error)
+        print("Current mean squared error: %s" % self.error)
 
 # initialize Drone
 D = DummyDrone(np.array([3.5, 1., 2.]), 0)
@@ -115,44 +115,48 @@ D = DummyDrone(np.array([3.5, 1., 2.]), 0)
 movements = [np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]),
              np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
              np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
-             np.array([0, 0, -1])]
+             np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0])]
 
 plt.ion()
 fig = plt.figure(figsize=(14,12))
 ax = fig.add_subplot(111, projection='3d')
 
-for c, movement in enumerate(movements):
-    ax.set_xlim(0, 7)
-    ax.set_ylim(0, 4)
-    ax.set_zlim(0, 3)
-    D.move(movement)
-    D.measure()
-    ax.scatter(D.real_position[0], D.real_position[1], D.real_position[2], zdir='y', c='red', label='real position')
-    ax.scatter(D.estimated_position[0], D.estimated_position[1],
-               D.estimated_position[2], zdir='y', c='gray', label='estimated position')
-    ax.scatter(0, 0, 0, zdir='y')
-    dir = np.array([0, 0, 1], dtype=np.float32)
-    dir = 1 / np.linalg.norm(dir) * dir
-    arw = Arrow3D.arrow(np.array([0, 0, 0]), D.real_position, color='red', lw=3)
-    ax.add_artist(arw)
-    arw = Arrow3D.arrow(D.real_position, D.real_position + dir, color='red')
-    ax.add_artist(arw)
-    arw = Arrow3D.arrow(np.array([0, 0, 0]), D.estimated_position, color='gray', lw=3)
-    ax.add_artist(arw)
-    arw = Arrow3D.arrow(D.estimated_position, D.estimated_position + dir, color='gray')
-    ax.add_artist(arw)
-    for key, value in D.landmarks.iteritems():
-        ax.scatter(D.landmarks[key][0], D.landmarks[key][1], D.landmarks[key][2], zdir='y', c='blue')
-        arw2 = Arrow3D.arrow(np.array([0, 0, 0]), D.landmarks[key], color='gray')
-        ax.add_artist(arw2)
-        if key in D.observable_landmarks():
-            arw3 = Arrow3D.arrow(D.landmarks[key], D.real_position)
-            ax.add_artist(arw3)
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles, labels)
-    if c == len(movements) - 1:
-        plt.show()
-    else:
+while True:
+    for movement in movements + movements[::-1]:
+        ax.set_xlim(0, 7)
+        ax.set_ylim(0, 4)
+        ax.set_zlim(0, 3)
+        D.move(movement)
+        D.measure()
+        ax.scatter(D.real_position[0], D.real_position[1], D.real_position[2], zdir='y', c='red', label='real position')
+        ax.scatter(D.estimated_position[0], D.estimated_position[1],
+                   D.estimated_position[2], zdir='y', c='gray', label='estimated position')
+        ax.scatter(0, 0, 0, zdir='y')
+        dir = np.array([0, 0, 1], dtype=np.float32)
+        dir = 1 / (2*np.linalg.norm(dir)) * dir
+        arw = Arrow3D.arrow(np.array([0, 0, 0]), D.real_position, color='red', lw=3)
+        ax.add_artist(arw)
+        arw = Arrow3D.arrow(D.real_position, D.real_position + dir, color='red')
+        ax.add_artist(arw)
+        arw = Arrow3D.arrow(np.array([0, 0, 0]), D.estimated_position, color='gray', lw=3)
+        ax.add_artist(arw)
+        arw = Arrow3D.arrow(D.estimated_position, D.estimated_position + dir, color='gray')
+        ax.add_artist(arw)
+        for key, value in D.landmarks.iteritems():
+            ax.scatter(D.landmarks[key][0], D.landmarks[key][1], D.landmarks[key][2], zdir='y', c='blue')
+            #arw2 = Arrow3D.arrow(np.array([0, 0, 0]), D.landmarks[key], color='gray')
+            #ax.add_artist(arw2)
+            if key in D.observable_landmarks():
+                arw3 = Arrow3D.arrow(D.landmarks[key], D.real_position)
+                ax.add_artist(arw3)
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles, labels)
+        textstr = '$MSE = $ %s' % D.error
+        # these are matplotlib.patch.Patch properties
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        # place a text box in upper left in axes coords
+        ax.text(5, 12, 0, textstr, transform=ax.transAxes, fontsize=14,
+                verticalalignment='top', bbox=props)
         fig.canvas.draw()
-        time.sleep(1)
+        time.sleep(4)
         ax.clear()
