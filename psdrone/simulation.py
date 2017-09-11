@@ -124,7 +124,7 @@ class DummyDrone(object):
         """
         Combines measurement with the current estimated position.
         """
-        if m != None:
+        if m is not None:
             self.estimated_position = (self.estimated_position + 2 * m) / 3.
         logging.info("Current estimated position: %s" % self.estimated_position)
         logging.info("Current mean squared error: %s" % self.error)
@@ -165,7 +165,7 @@ class Kalman1D(object):
 
     def update(self, measurement):
         x, P = self.state
-        if measurement != None:
+        if measurement is not None:
             z, R = (measurement[0], 0.2)
             y = z - x
             # Now with Kalman gain:
