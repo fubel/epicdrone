@@ -175,66 +175,66 @@ class Kalman1D(object):
             self.state = (x, P)
             logging.info("Current estimated state: %s" % str(self.state))
 
+if __name__ == '__main__':
+    # initialize Drone
+    D = DummyDrone(np.array([3.5, 1., 2.]), 0)
+    K = Kalman1D(D)
 
-# initialize Drone
-D = DummyDrone(np.array([3.5, 1., 2.]), 0)
-K = Kalman1D(D)
+    movements = [np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]),
+                 np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
+                 np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
+                 np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0])]
 
-movements = [np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]),
-             np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
-             np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
-             np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0])]
-
-# mesh for kalman gaussian vis
-x = np.linspace(D.x_range[0], D.x_range[1], 500)
-plt.ion()
-fig = plt.figure(figsize=(14,8))
-ax = fig.add_subplot(111, projection='3d')
-#
-while True:
-    for movement in movements + movements[::-1]:
-        time_step = 1
-        ax.set_xlim(0, 7)
-        ax.set_ylim(0, 4)
-        ax.set_zlim(0, 3)
-        K.predict(movement)
-        m = D.measure()
-        K.update(m)
-        D.update(m)
-        ax.scatter(D.real_position[0], D.real_position[1], D.real_position[2], zdir='y', c='red', label='real position')
-        ax.scatter(D.estimated_position[0], D.estimated_position[1],
-                   D.estimated_position[2], zdir='y', c='gray', label='Average estimation')
-        ax.scatter(K.state[0], D.real_position[1],
-                   D.real_position[2], zdir='y', c='green', label='Kalman estimation')
-        ax.scatter(0, 0, 0, zdir='y')
-        rv = norm(loc=K.state[0], scale=K.state[1])
-        ax.plot(x, rv.pdf(x), zdir='y', label='Kalman Filter belief')
-        dir = np.array([0, 0, 1], dtype=np.float32)
-        dir = 1 / (2*np.linalg.norm(dir)) * dir
-        arw = Arrow3D.arrow(np.array([0, 0, 0]), D.real_position, color='red', lw=3)
-        ax.add_artist(arw)
-        arw = Arrow3D.arrow(D.real_position, D.real_position + dir, color='red')
-        ax.add_artist(arw)
-        arw = Arrow3D.arrow(np.array([0, 0, 0]), D.estimated_position, color='gray', lw=3)
-        ax.add_artist(arw)
-        arw = Arrow3D.arrow(D.estimated_position, D.estimated_position + dir, color='gray')
-        ax.add_artist(arw)
-        for key, value in D.landmarks.iteritems():
-            ax.scatter(D.landmarks[key][0], D.landmarks[key][1], D.landmarks[key][2], zdir='y', c='blue')
-            #arw2 = Arrow3D.arrow(np.array([0, 0, 0]), D.landmarks[key], color='gray')
-            #ax.add_artist(arw2)
-            if key in D.observable_landmarks():
-                arw3 = Arrow3D.arrow(D.landmarks[key], D.real_position)
-                ax.add_artist(arw3)
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles, labels)
-        textstr = '$MSE_A = $%s, $MSE_K = $%s' % (D.error, (D.real_position[0] - K.state[0])**2)
-        # these are matplotlib.patch.Patch properties
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        # place a text box in upper left in axes coords
-        ax.text(5, 12, 0, textstr, transform=ax.transAxes, fontsize=14,
-                verticalalignment='top', bbox=props)
-        fig.canvas.draw()
-        time.sleep(1)
-        ax.clear()
+    # mesh for kalman gaussian vis
+    x = np.linspace(D.x_range[0], D.x_range[1], 500)
+    plt.ion()
+    fig = plt.figure(figsize=(14,8))
+    ax = fig.add_subplot(111, projection='3d')
+    #
+    while True:
+        for movement in movements + movements[::-1]:
+            time_step = 1
+            ax.set_xlim(0, 7)
+            ax.set_ylim(0, 4)
+            ax.set_zlim(0, 3)
+            K.predict(movement)
+            m = D.measure()
+            K.update(m)
+            D.update(m)
+            ax.scatter(D.real_position[0], D.real_position[1], D.real_position[2], zdir='y', c='red', label='real position')
+            ax.scatter(D.estimated_position[0], D.estimated_position[1],
+                       D.estimated_position[2], zdir='y', c='gray', label='Average estimation')
+            ax.scatter(K.state[0], D.real_position[1],
+                       D.real_position[2], zdir='y', c='green', label='Kalman estimation')
+            ax.scatter(0, 0, 0, zdir='y')
+            rv = norm(loc=K.state[0], scale=K.state[1])
+            ax.plot(x, rv.pdf(x), zdir='y', label='Kalman Filter belief')
+            dir = np.array([0, 0, 1], dtype=np.float32)
+            dir = 1 / (2*np.linalg.norm(dir)) * dir
+            arw = Arrow3D.arrow(np.array([0, 0, 0]), D.real_position, color='red', lw=3)
+            ax.add_artist(arw)
+            arw = Arrow3D.arrow(D.real_position, D.real_position + dir, color='red')
+            ax.add_artist(arw)
+            arw = Arrow3D.arrow(np.array([0, 0, 0]), D.estimated_position, color='gray', lw=3)
+            ax.add_artist(arw)
+            arw = Arrow3D.arrow(D.estimated_position, D.estimated_position + dir, color='gray')
+            ax.add_artist(arw)
+            for key, value in D.landmarks.iteritems():
+                ax.scatter(D.landmarks[key][0], D.landmarks[key][1], D.landmarks[key][2], zdir='y', c='blue')
+                #arw2 = Arrow3D.arrow(np.array([0, 0, 0]), D.landmarks[key], color='gray')
+                #ax.add_artist(arw2)
+                if key in D.observable_landmarks():
+                    arw3 = Arrow3D.arrow(D.landmarks[key], D.real_position)
+                    ax.add_artist(arw3)
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(handles, labels)
+            textstr = '$MSE_A = $%s, $MSE_K = $%s' % (D.error, (D.real_position[0] - K.state[0])**2)
+            # these are matplotlib.patch.Patch properties
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            # place a text box in upper left in axes coords
+            ax.text(5, 12, 0, textstr, transform=ax.transAxes, fontsize=14,
+                    verticalalignment='top', bbox=props)
+            fig.canvas.draw()
+            time.sleep(1)
+            ax.clear()
 
