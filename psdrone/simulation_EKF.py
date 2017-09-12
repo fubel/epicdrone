@@ -1,15 +1,9 @@
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import matplotlib
 matplotlib.rcParams['backend'] = "TkAgg"
-import matplotlib.pyplot as plt
-import time
-import logging
-
-from mpl_toolkits.mplot3d import proj3d
-from matplotlib.patches import FancyArrowPatch
+from simulation import *
 from scipy.stats import norm
 
 import numpy as np
@@ -104,5 +98,47 @@ class ExtendedKalmanFilter(object):
         observation function as a NumPy array.
         '''
 
+class Drone1DEKF(ExtendedKalmanFilter):
+    def __init__(self):
+        """
+        n -> 1 (x-value)
+        m -> 1 (distance out of pos, acceleration and speed)
+        """
+        ExtendedKalmanFilter.__init__(self, 1, 1)
 
-raise NotImplementedError()
+    def f(self, x):
+        return np.copy(x)
+
+    def getF(self, x):
+        # returns identity matrix, in the dimensions of x
+        return np.eye(x.shape[0])
+
+    def h(self, x):
+        '''
+        input:
+            x = (pos, acceleration, speed)
+
+        assuming:
+            constant accelaration
+            measurement-frequency 1hz (delta-t = 1s)
+        '''
+        pos, a, v_0 = x[0]
+        s = pos + a/2+v_0 # s = a/2 * t^2 + v_0 * t
+        return np.array(s)
+
+    def getH(self, x):
+        return np.eye(x.shape[0])
+
+def main():
+    # todo add used sensors to drone
+    D = DummyDrone(np.array([3.5, 1., 2.]), 0)
+    EKF = Drone1DEKF()
+    observation = 0, 1.5, 10 # initial pos, value from accelerometer in m/s^2, inital speed in m/s
+    pos_new = EKF.step(observation)
+    logging.info("%s"%pos_new)
+
+    # todo simulate movement
+    # take estimation and new values from accelerometer and speedometer as input for next step
+
+if __name__ == '__main__':
+    main()
