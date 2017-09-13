@@ -148,9 +148,9 @@ def main():
     test_linearKF.x = np.array([[1.],   # pos_x
                                 [1.],   # pos_z
                                 [1.],   # pos_y
-                                [1.],   # vel_x
-                                [1.],   # vel_z
-                                [1.]])  # vel_y
+                                [0.],   # vel_x
+                                [0.],   # vel_z
+                                [0.]])  # vel_y
 
     # state transition matrix
     test_linearKF.F = np.array([[1.,0.,0.,delta_t,0.,0.],
@@ -161,23 +161,19 @@ def main():
                                 [0.,0.,0.,0.,0.,1.]])
 
     # measrument matrix
-    test_linearKF.H = np.array([[1.,0.,0.],
-                                [0.,1.,0.],
-                                [0.,0.,1.],
-                                [0.,0.,0.],
-                                [0.,0.,0.],
-                                [0.,0.,0.]])
+    test_linearKF.H = np.array([[1.,0.,0.,0.,0.,0.],
+                                [0.,1.,0.,0.,0.,0.],
+                                [0.,0.,1.,0.,0.,0.]])
 
-    D = DummyDrone(np.array([[3.5],
-                            [0.],
-                            [0.],
-                            [1.],
-                            [1.],
-                            [1.]]), 0)
+    z = np.array([[3.5],
+                 [1.],
+                 [2.]])
+
+    D = DummyDrone(z, 0)
 
     while True:
         test_linearKF.predict()
-        test_linearKF.update(D)
+        test_linearKF.update(z)
 
         logging.info("%s"%test_linearKF.x)
 
