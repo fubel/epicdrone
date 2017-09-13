@@ -117,7 +117,7 @@ class Drone1DEKF(ExtendedKalmanFilter):
             [0, 0, 0, 1, 0, 0],
             [0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 1]
-        ])
+        ], dtype=np.float32)
 
     def getF(self, x):
         # returns identity matrix, in the dimensions of x
@@ -132,9 +132,17 @@ class Drone1DEKF(ExtendedKalmanFilter):
             constant accelaration
             measurement-frequency 1hz (delta-t = 1s)
         '''
-        pos, a, v_0 = x[0]
-        s = pos + a/2+v_0 # s = a/2 * t^2 + v_0 * t
-        return np.array(s)
+        #pos, a, v_0 = x[0]
+        #s = pos + a/2+v_0 # s = a/2 * t^2 + v_0 * t
+        #return np.array(s)
+        return np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ], dtype=np.float32)
 
     def getH(self, x):
         return np.eye(x.shape[0])
