@@ -6,6 +6,9 @@ matplotlib.rcParams['backend'] = "TkAgg"
 from simulation import *
 from scipy.stats import norm
 
+from filterpy.kalman import KalmanFilter
+from filterpy.common import Q_discrete_white_noise
+
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
@@ -107,7 +110,14 @@ class Drone1DEKF(ExtendedKalmanFilter):
         ExtendedKalmanFilter.__init__(self, 1, 1)
 
     def f(self, x):
-        return np.copy(x)
+        return np.array([
+            [1, 0, 0, 1, 0, 0],
+            [0, 1, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1],
+            [0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1]
+        ])
 
     def getF(self, x):
         # returns identity matrix, in the dimensions of x
@@ -130,12 +140,58 @@ class Drone1DEKF(ExtendedKalmanFilter):
         return np.eye(x.shape[0])
 
 def main():
+
+    test_linearKF = KalmanFilter(dim_x=6, dim_z=6)
+
+    delta_t = 1.                        # 1 second
+
+    test_linearKF.x = np.array([[1.],   # pos_x
+                                [1.],   # pos_z
+                                [1.],   # pos_y
+                                [1.],   # vel_x
+                                [1.],   # vel_z
+                                [1.]])  # vel_y
+
+    # state transition matrix
+    test_linearKF.F = np.array([[1.,0.,0.,delta_t,0.,0.],
+                                [0.,1.,0.,0.,delta_t,0.],
+                                [0.,0.,1.,0.,0.,delta_t],
+                                [0.,0.,0.,1.,0.,0.],
+                                [0.,0.,0.,0.,1.,0.],
+                                [0.,0.,0.,0.,0.,1.]])
+
+    # measrument matrix
+    test_linearKF.H = np.array([[1.,0.,0.],
+                                [0.,1.,0.],
+                                [0.,0.,1.],
+                                [0.,0.,0.],
+                                [0.,0.,0.],
+                                [0.,0.,0.]])
+
+    D = DummyDrone(np.array([[3.5],
+                            [0.],
+                            [0.],
+                            [1.],
+                            [1.],
+                            [1.]]), 0)
+
+    while True:
+        test_linearKF.predict()
+        test_linearKF.update(D)
+
+        logging.info("%s"%test_linearKF.x)
+
+    #test_linearKF.P *= 100.     # covariance matrix
+    #test_linearKF.R = 5.        # state uncertainty
+    #test_linearKF.Q = Q_discrete_white_noise(6, delta_t, .1)    # process uncertainty
+
+
     # todo add used sensors to drone
-    D = DummyDrone(np.array([3.5, 1., 2.]), 0)
-    EKF = Drone1DEKF()
-    observation = 0, 1.5, 10 # initial pos, value from accelerometer in m/s^2, inital speed in m/s
-    pos_new = EKF.step(observation)
-    logging.info("%s"%pos_new)
+    #D = DummyDrone(np.array([3.5, 1., 2.]), 0)
+    #EKF = Drone1DEKF()
+    #observation = 0, 1.5, 10 # initial pos, value from accelerometer in m/s^2, inital speed in m/s
+    #pos_new = EKF.step(observation)
+    #logging.info("%s"%pos_new)
 
     # todo simulate movement
     # take estimation and new values from accelerometer and speedometer as input for next step
