@@ -107,7 +107,11 @@ class Drone1DEKF(ExtendedKalmanFilter):
         ExtendedKalmanFilter.__init__(self, 1, 1)
 
     def f(self, x):
-        return np.copy(x)
+        return np.array([
+            [1, 0, 0, 1, 0, 0],
+            [0, 1, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1]
+        ])
 
     def getF(self, x):
         # returns identity matrix, in the dimensions of x
