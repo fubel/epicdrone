@@ -14,6 +14,7 @@ class Drone(object):
     simulation = None
     position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
     orientation = [0, 0, 0] # heading, pitch, roll
+    velocity = [0, 0, 0] # x,y,z in mm/s
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
 
@@ -71,6 +72,13 @@ class Drone(object):
         return str(my_drone.psdrone.NavData["demo"][0][2]) + " " + " " + str(
             my_drone.psdrone.NavData["magneto"][10]) + " " + str(
             my_drone.psdrone.NavData["magneto"][11])
+
+    def get_velocity(self):
+        """returns velocity [v_x,v_y,v_z] in mm/s"""
+        if self.simulation:
+            return self.velocity
+        else:
+            return self.psdrone.NavData["demo"][4]
 
 
 if __name__ == '__main__':
