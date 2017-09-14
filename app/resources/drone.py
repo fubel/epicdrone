@@ -2,7 +2,7 @@ from __future__ import division
 
 import numpy as np
 import logging
-import app.libs.ps_drone
+import libs.ps_drone
 import time
 import math
 # logging settings:
@@ -17,16 +17,21 @@ class Drone(object):
     velocity = [0, 0, 0] # x,y,z in mm/s
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
+    postion_by_input = False
 
     def __init__(self, simulation=True):
 
         self.simulation = simulation
         if (self.simulation==False):
-            self.psdrone = app.libs.ps_drone.Drone()
+            self.psdrone = libs.ps_drone.Drone()
             self.psdrone.debug = True
             self.psdrone.startup()
-
-            while (self.psdrone.getBattery()[0] == -1): time.sleep(0.1)  # Reset completed ?
+            self.psdrone.reset()
+            timeCurrent = time.time()
+            while (self.psdrone.getBattery()[0] == -1):
+                if(time.time() - timeCurrent >= 5):
+                    raise Exception("Drone not found")
+                time.sleep(0.1)  # Reset completed ?
             print ("Battery :" + str(self.psdrone.getBattery()[0]) + " % " + str(self.psdrone.getBattery()[1]))
 
             self.psdrone.useDemoMode(False)
@@ -39,6 +44,35 @@ class Drone(object):
                     break
                 if(time.time() - timeCurrent >= 5):
                     raise Exception("No NavData")
+
+    def startup(self):
+        if not self.simulation:
+            self.psdrone.startup()
+
+    def takeoff(self):
+        if not self.simulation:
+            self.psdrone.takeoff()
+
+    def emergency(self):
+        if not self.simulation:
+            self.psdrone.emergency()
+
+    def land(self):
+        if not self.simulation:
+            self.psdrone.land()
+
+    def move(self, leftright, backwardforward, downup, turnleftright):
+        if not self.simulation:
+            self.psdrone.move(leftright, backwardforward, downup, turnleftright)
+        else:
+            self.orientation[0] += -turnleftright
+        if self.postion_by_input:
+            self.position[0] += backwardforward * 0.05
+            self.position[2] += leftright * 0.05
+            self.position[1] += downup * 0.05
+
+    def set_position_by_input(self, value=True):
+        self.postion_by_input = value
 
     def get_position(self):
         return self.position
@@ -63,7 +97,6 @@ class Drone(object):
             for key in range(len(gyro)):
                 if gyro[key] < 10 and gyro[key] > -10:
                     gyro[key] = 0
-            print gyro
 
             # angles based on gyro(deg / s)
             self._gx += gyro[0] / 1030.
@@ -75,18 +108,8 @@ class Drone(object):
             self._gy = self._gy * 0.96 + self._ay * 0.04
 
             self.orientation = [self._gz, self._ax, self._ay]
-            print self.orientation
 
         return self.orientation
-
-    def move(self, leftright, backwardforward, downup, turnleftright):
-        if not self.simulation:
-            self.psdrone.move(leftright, backwardforward, downup, turnleftright)
-        else:
-            self.position[0] += backwardforward * 0.05
-            self.position[2] += leftright * 0.05
-            self.position[1] += downup * 0.05
-            self.orientation[0] += -turnleftright
 
     def get_data_dump(self):
         return str(my_drone.psdrone.NavData["demo"][0][2]) + " " + " " + str(

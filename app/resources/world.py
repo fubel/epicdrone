@@ -10,7 +10,7 @@ from direct.task import Task
 from panda3d.core import TransparencyAttrib
 from direct.gui.OnscreenText import OnscreenText, TextNode
 from direct.directtools.DirectGeometry import LineNodePath
-from app.resources.drone import Drone
+from drone import Drone
 
 
 class World(ShowBase):
@@ -135,13 +135,13 @@ class World(ShowBase):
         return Task.cont
 
     def drone_model(self):
-        drone = self.loader.loadModel("models/drone")
+        drone = self.loader.loadModel("resources/models_3d/drone")
         drone.setScale(15, 15, 10)
         drone.reparentTo(self.render)
         return drone
 
     def wall_model(self, x, y , z, length, orientation):
-        wall = self.loader.loadModel("models/plane")
+        wall = self.loader.loadModel("resources/models_3d/plane")
         wall.reparentTo(self.render)
         wall.setScale(length, 0, 290)
         wall.setPos(x, y, z)
@@ -151,7 +151,7 @@ class World(ShowBase):
         return wall
 
     def marker_model(self, position, orientation):
-        marker = self.loader.loadModel("models/plane")
+        marker = self.loader.loadModel("resources/models_3d/plane")
         marker.reparentTo(self.render)
         marker.setScale(21, 0, 21)
         marker.setPos(position[0], position[1], position[2])
@@ -170,7 +170,7 @@ class World(ShowBase):
         return line
 
     def point_model(self, position, color):
-        marker = self.loader.loadModel("models/sphere")
+        marker = self.loader.loadModel("resources/models_3d/sphere")
         marker.reparentTo(self.render)
         marker.setScale(5, 5, 5)
         marker.setPos(position[0], position[1], position[2])

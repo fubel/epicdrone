@@ -16,43 +16,42 @@ if __name__ == '__main__':
 
     print "You have to startup the drone by pressing START"
 
-    world = World(simulation=True)
+    world = World(simulation=False)
 
     # one marker in the middle of the four walls
     world.set_default_markers()
 
     drone = world.get_drone()
+    drone.set_position_by_input()
 
     def sim_loop(world, task):
         global unlocked, drone
 
-        if joy.Start():
-            drone.startup()
-            unlocked = True
-            block(joy.Start)
+        if joy.Back():
+            world.stop()
 
-        if unlocked:
-            # takeoff:
-            if joy.A():
-                drone.takeoff()
-                block(joy.A)
+        # takeoff:
+        if joy.A():
+            print "takeoff"
+            drone.takeoff()
+            block(joy.A)
 
-            # emergency:
-            if joy.X():
-                drone.emergency()
-                block(joy.X)
+        # emergency:
+        if joy.X():
+            print "emergency"
+            drone.emergency()
+            block(joy.X)
 
-            # reset:
-            if joy.B():
-                drone.reset()
-                block(joy.B)
+        # emergency:
+        if joy.B():
+            print "land"
+            drone.land()
+            block(joy.B)
 
         (roll, throttle) = joy.leftStick()
         (yaw, pitch) = joy.rightStick()
+        print roll, pitch, throttle, yaw
         drone.move(roll, pitch, throttle, yaw)
-
-        if joy.Back():
-            world.stop()
 
     world.hook_loop(sim_loop)
 
