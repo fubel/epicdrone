@@ -13,7 +13,7 @@ class Drone(object):
 
     simulation = None
     position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
-    orientation = [0, 0, 0] # heading, pitch, roll (angle in degrees)
+    orientation = [180, 0, 0] # heading, pitch, roll (angle in degrees)
     velocity = [0, 0, 0] # x,y,z in mm/s
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
@@ -100,12 +100,10 @@ class Drone(object):
         rot_y = [np.sin(a)*np.cos(b), np.sin(a)*np.sin(b)*np.sin(c)+np.cos(a)*np.cos(c), np.sin(a)*np.sin(b)*np.cos(c)-np.cos(a)*np.sin(c)]
         rot_z = [-np.sin(a), np.cos(b)*np.sin(c), np.cos(b)*np.cos(c)]
 
-        return [rot_x, rot_y, rot_z]
+        return np.array([rot_x, rot_y, rot_z])
 
 
 if __name__ == '__main__':
     my_drone = Drone(simulation=True)
-    print
-    while True:
-        print (np.array([1,1,1]) * my_drone.get_rotation_matrix())
-        time.sleep(1)
+
+    print (np.array([1,1,1]).dot(my_drone.get_rotation_matrix()))
