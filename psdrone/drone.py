@@ -4,7 +4,7 @@ import numpy as np
 import logging
 import ps_drone
 import time
-
+import math
 # logging settings:
 logging.basicConfig(level=logging.INFO)
 
@@ -13,7 +13,7 @@ class Drone(object):
 
     simulation = None
     position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
-    orientation = [0, 0, 0] # heading, pitch, roll
+    orientation = [0, 0, 0] # heading, pitch, roll (angle in degrees)
     velocity = [0, 0, 0] # x,y,z in mm/s
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
@@ -81,7 +81,18 @@ class Drone(object):
             return self.psdrone.NavData["demo"][4]
 
 
+    def get_orientation_normvector(self):
+        heading, pitch, roll = self.get_orientation()
+
+        x = math.cos(heading) * math.cos(pitch)
+        y = math.sin(heading) * math.cos(pitch)
+        z = math.sin(pitch)
+
+        return [x,y,z]
+
+
 if __name__ == '__main__':
     my_drone = Drone(simulation=False)
     while True:
-        print(my_drone.get_data_dump())
+        #print(my_drone.get_data_dump())
+        print my_drone.get_orientation_normvector()
