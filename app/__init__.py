@@ -1,1 +1,1 @@
-from app import app
+from world import app
