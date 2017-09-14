@@ -2,8 +2,9 @@ from __future__ import division
 
 import numpy as np
 import logging
-import libs.ps_drone
+import app.libs.ps_drone
 import time
+import cv2
 import math
 # logging settings:
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +50,7 @@ class Drone(object):
             while self.CDC == self.psdrone.ConfigDataCount:
                 time.sleep(0.0001)
             self.psdrone.startVideo()
+            self.IMC = self.psdrone.VideoImageCount
 
             # get nav data
             timeCurrent = time.time()
@@ -148,12 +150,19 @@ class Drone(object):
 
         return np.array([rot_x, rot_y, rot_z])
 
-    def get_aruco(self):
+    def capture_screen(self):
         """
-        Looks for Aruco markers in video stream to compute a measurement
-        Returns:
-            A (position) measurement.
+        Captures the current image from drone video
         """
+        if not self.simulation:
+            # wait until next available video frame
+            while self.psdrone.VideoImageCount == IMC:
+                time.sleep(0.01)
+            self.IMC = self.psdrone.VideoImageCount
+            frame = self.psdrone.VideoImage
+            return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        else:
+            return None
 
 
 if __name__ == '__main__':
