@@ -206,7 +206,7 @@ class Drone(object):
 
             # complete measurement
             m = np.r_[p, v]
-
+            logging.info("Measurement vector: %s" % m)
             return m
 
 if __name__ == '__main__':
