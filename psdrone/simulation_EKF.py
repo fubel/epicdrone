@@ -1,12 +1,11 @@
 from __future__ import division
 from __future__ import print_function
-
+import logging
 import numpy as np
 import matplotlib
-matplotlib.rcParams['backend'] = "TkAgg"
 from drone import Drone
 from filterpy.kalman import KalmanFilter
-import logging
+matplotlib.rcParams['backend'] = "TkAgg"
 
 
 def main():
@@ -14,7 +13,7 @@ def main():
     test_linearKF = KalmanFilter(dim_x=6, dim_z=3)
 
     # 1/60 second
-    delta_t = 1.                        # 1 second
+    delta_t = 1/60.                     # 1 second
 
     test_linearKF.x = np.array([[1.],   # pos_x
                                 [1.],   # pos_z
@@ -34,7 +33,10 @@ def main():
     # measreument matrix
     test_linearKF.H = np.array([[1.,0.,0.,0.,0.,0.],
                                 [0.,1.,0.,0.,0.,0.],
-                                [0.,0.,1.,0.,0.,0.]])
+                                [0.,0.,1.,0.,0.,0.],
+                                [0.,0.,0.,1.,0.,0.],
+                                [0.,0.,0.,0.,1.,0.],
+                                [0.,0.,0.,0.,0.,1.]])
 
     epic_drone = Drone(simulation=True)
 
