@@ -8,8 +8,8 @@ import time
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # Define object points for a 9x6 grid
-objp = np.zeros((6 * 9, 3), np.float32)
-objp[:, :2] = np.mgrid[0:9, 0:6].T.reshape(-1, 2)
+objp = np.zeros((7 * 9, 3), np.float32)
+objp[:, :2] = np.mgrid[0:9, 0:7].T.reshape(-1, 2)
 objp = objp * 26
 
 # Arrays to store object points and image points
@@ -41,18 +41,22 @@ while not stop:
     img  = drone.VideoImage					# Copy video-image
     # pImg = cv2.resize(img,(400,100))		# Process video-image
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, corners = cv2.findChessboardCorners(gray, (9, 6), None)
+    ret, corners = cv2.findChessboardCorners(gray, (9, 7), None)
     if ret:
         print("found")
         objpoints.append(objp)
         cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         imgpoints.append(corners)
-        cv2.drawChessboardCorners(img, (9, 6), corners, ret)
-        cv2.imshow('img', img)
-        cv2.waitKey(500)
+        cv2.drawChessboardCorners(img, (9, 7), corners, ret)
+
+    if len(objpoints) > 20:
+        stop = True
+    cv2.imshow('img', gray)
+    cv2.waitKey(10)
+
+
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints,
-                                                   imgpoints, gray.shape[::-1],
-                                                   None, None)
+                                                   imgpoints, gray.shape[::-1], None, None)
 
 print "Camera calibration matrix\n\n", mtx
 print "Camera dist, rvecs, tvecs", dist, rvecs, tvecs
