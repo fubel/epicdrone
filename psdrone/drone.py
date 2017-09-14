@@ -13,7 +13,7 @@ class Drone(object):
 
     simulation = None
     position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
-    orientation = [0, 0, 0] # heading, pitch, roll (angle in degrees)
+    orientation = [180, 0, 0] # heading, pitch, roll (angle in degrees)
     velocity = [0, 0, 0] # x,y,z in mm/s
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
@@ -92,41 +92,18 @@ class Drone(object):
             return self.psdrone.NavData["demo"][4]
 
 
-    def get_orientation_normvector(self):
-        heading, pitch, roll = self.get_orientation().map(math.radians)
+    def get_rotation_matrix(self):
+        heading, pitch, roll = map(np.deg2rad, self.get_orientation())
+        a, b, c = heading, pitch, roll
 
-        yawMatrix = np.matrix([
-            [math.cos(heading), -math.sin(heading), 0],
-            [math.sin(heading), math.cos(heading), 0],
-            [0, 0, 1]
-        ])
+        rot_x = [np.cos(a)*np.cos(b), np.cos(a)*np.sin(b)*np.sin(c)-np.sin(a)*np.cos(c), np.cos(a)*np.sin(b)*np.cos(c)+np.sin(a)*np.sin(c)]
+        rot_y = [np.sin(a)*np.cos(b), np.sin(a)*np.sin(b)*np.sin(c)+np.cos(a)*np.cos(c), np.sin(a)*np.sin(b)*np.cos(c)-np.cos(a)*np.sin(c)]
+        rot_z = [-np.sin(a), np.cos(b)*np.sin(c), np.cos(b)*np.cos(c)]
 
-        pitchMatrix = np.matrix([
-            [math.cos(pitch), 0, math.sin(pitch)],
-            [0, 1, 0],
-            [-math.sin(pitch), 0, math.cos(pitch)]
-        ])
-
-        rollMatrix = np.matrix([
-            [1, 0, 0],
-            [0, math.cos(roll), -math.sin(roll)],
-            [0, math.sin(roll), math.cos(roll)]
-        ])
-
-        R = yawMatrix * pitchMatrix * rollMatrix
-
-        theta = math.acos(((R[0, 0] + R[1, 1] + R[2, 2]) - 1) / 2)
-        multi = 1 / (2 * math.sin(theta))
-
-        rx = multi * (R[2, 1] - R[1, 2]) * theta
-        ry = multi * (R[0, 2] - R[2, 0]) * theta
-        rz = multi * (R[1, 0] - R[0, 1]) * theta
-
-        return [rx, ry, rz]
+        return np.array([rot_x, rot_y, rot_z])
 
 
 if __name__ == '__main__':
-    my_drone = Drone(simulation=False)
-    while True:
-        #print(my_drone.get_data_dump())
-        print my_drone.get_orientation_normvector()
+    my_drone = Drone(simulation=True)
+
+    print (np.array([1,1,1]).dot(my_drone.get_rotation_matrix()))
