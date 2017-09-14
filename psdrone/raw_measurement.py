@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import xbox
+from orientation import *
 
 if __name__ == "__main__":
     drone = ps_drone.Drone()
@@ -16,99 +17,95 @@ if __name__ == "__main__":
     print "Battery:"+str(drone.getBattery()[0]) +" % "+str(drone.getBattery()[1])
 
     drone.useDemoMode(False)
-    drone.addNDpackage(["demo"])
     drone.addNDpackage(["all"])
 
     while not "raw_measures" in drone.NavData:
         pass
+
     joy = None
     try:
         joy = xbox.Joystick()
     except:
         pass
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(2, 2, 1)
-    ax2 = fig.add_subplot(2, 2, 2)
-    ax3 = fig.add_subplot(2,2,3, projection='3d')
-    data_accelerometer = [[],[],[]]
-    data_gyrometer = [[],[],[]]
+    video_flags = OPENGL | DOUBLEBUF
 
-    def graph_loop(index):
-        for i in range(len(data_accelerometer)):
-            if len(data_accelerometer[i]) > 100:
-                data_accelerometer[i].pop(0)
-            data_accelerometer[i].append(drone.NavData["raw_measures"][0][i])
-        for i in range(len(data_gyrometer)):
-            if len(data_gyrometer[i]) > 100:
-                data_gyrometer[i].pop(0)
-            data_gyrometer[i].append(drone.NavData["raw_measures"][1][i])
+    pygame.init()
+    screen = pygame.display.set_mode((640, 480), video_flags)
+    pygame.display.set_caption("Press Esc to quit, z toggles yaw mode")
+    resize((640, 480))
+    init()
+    frames = 0
+    ticks = pygame.time.get_ticks()
+    while True:
+        event = pygame.event.poll()
+        if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            break
+        gyro = drone.NavData["raw_measures"][1]
+        accelerometer = drone.NavData["raw_measures"][0]
+        gyro[0] = (gyro[0]-39)/100.
+        gyro[1] = (gyro[1]-30)/100.
+        gyro[2] = (gyro[2]+33)/100.
+        accelerometer = list(map(lambda x: (x-2020.)/50., accelerometer))
+        accelerometer2 = [accelerometer[1],accelerometer[0],accelerometer[2]]
+        print gyro, accelerometer2
+        read_data(
+            gyro=gyro,  # x, y, z
+            accelerometer=accelerometer2  # x, y, z
+        )
+        draw()
 
-        ax1.clear()
-        ax1.axis([0, 100, -3000, 3000])
-        ax2.clear()
-        ax2.axis([0, 100, -3000, 3000])
-        ax3.clear()
-        ax3.set_xlim3d(-200, 200)
-        ax3.set_ylim3d(-200,200)
-        ax3.set_zlim3d(-200,200)
-        for i in range(len(data_accelerometer)):
-            ax1.plot(data_accelerometer[i])
-        for i in range(len(data_gyrometer)):
-            ax2.plot(data_gyrometer[i])
-        ax3.plot([0,drone.NavData["magneto"][0][0]], [0,drone.NavData["magneto"][0][1]], [0,drone.NavData["magneto"][0][2]])
+        pygame.display.flip()
+        frames += 1
 
         if joy is not None:
             (roll, throttle) = joy.leftStick()
             (yaw, pitch) = joy.rightStick()
             drone.move(roll, pitch, throttle, yaw)
 
-        key = drone.getKey()
-        print str(drone.NavData["demo"][0][2]) + " " + key + " " + str(drone.NavData["magneto"][10]) + " " + str(drone.NavData["magneto"][11])
-        if key == " ":
-            if drone.NavData["demo"][0][2] and not drone.NavData["demo"][0][3]:
-                drone.takeoff()
-            else:
-                drone.land()
-        if key == "x":
-            drone.emergency()
-        elif key == "0":
-            drone.hover()
-        elif key == "w":
-            drone.moveForward()
-        elif key == "s":
-            drone.moveBackward()
-        elif key == "a":
-            drone.moveLeft()
-        elif key == "d":
-            drone.moveRight()
-        elif key == "q":
-            drone.turnLeft()
-        elif key == "e":
-            drone.turnRight()
-        elif key == "7":
-            drone.turnAngle(-10, 1)
-        elif key == "9":
-            drone.turnAngle(10, 1)
-        elif key == "4":
-            drone.turnAngle(-45, 1)
-        elif key == "6":
-            drone.turnAngle(45, 1)
-        elif key == "1":
-            drone.turnAngle(-90, 1)
-        elif key == "3":
-            drone.turnAngle(90, 1)
-        elif key == "8":
-            drone.moveUp()
-        elif key == "2":
-            drone.moveDown()
-        elif key == "*":
-            drone.doggyHop()
-        elif key == "+":
-            drone.doggyNod()
-        elif key == "-":
-            drone.doggyWag()
+        # key = drone.getKey()
+        # if key == " ":
+        #     if drone.NavData["demo"][0][2] and not drone.NavData["demo"][0][3]:
+        #         drone.takeoff()
+        #     else:
+        #         drone.land()
+        # if key == "x":
+        #     drone.emergency()
+        # elif key == "0":
+        #     drone.hover()
+        # elif key == "w":
+        #     drone.moveForward()
+        # elif key == "s":
+        #     drone.moveBackward()
+        # elif key == "a":
+        #     drone.moveLeft()
+        # elif key == "d":
+        #     drone.moveRight()
+        # elif key == "q":
+        #     drone.turnLeft()
+        # elif key == "e":
+        #     drone.turnRight()
+        # elif key == "7":
+        #     drone.turnAngle(-10, 1)
+        # elif key == "9":
+        #     drone.turnAngle(10, 1)
+        # elif key == "4":
+        #     drone.turnAngle(-45, 1)
+        # elif key == "6":
+        #     drone.turnAngle(45, 1)
+        # elif key == "1":
+        #     drone.turnAngle(-90, 1)
+        # elif key == "3":
+        #     drone.turnAngle(90, 1)
+        # elif key == "8":
+        #     drone.moveUp()
+        # elif key == "2":
+        #     drone.moveDown()
+        # elif key == "*":
+        #     drone.doggyHop()
+        # elif key == "+":
+        #     drone.doggyNod()
+        # elif key == "-":
+        #     drone.doggyWag()
 
-    loop = animation.FuncAnimation(fig, graph_loop, interval=20)
-    plt.show()
 

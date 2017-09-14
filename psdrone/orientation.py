@@ -16,9 +16,9 @@ def resize((width, height)):
 	glMatrixMode(GL_PROJECTION)
 	glLoadIdentity()
 	gluPerspective(45, 1.0*width/height, 0.1, 100.0)
+
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
-
 
 def init():
 	glShadeModel(GL_SMOOTH)
@@ -47,6 +47,21 @@ def draw():
 	osd_text = "pitch: " + str("{0:.2f}".format(ay)) + ", roll: " + str("{0:.2f}".format(ax)) + ", yaw: " + str("{0:.2f}".format(az))
 
 	drawText((-2, -2, 2), osd_text)
+
+	glBegin(GL_LINES)
+	glColor3f(0.0, 1.0, 0.0)
+	glVertex3f(0.0, 0.0, 0.0)
+	glVertex3f(15., 0., 0.)
+
+	glColor3f(1.0, 1.0, 0.0)
+	glVertex3f(0.0, 0.0, 0.0)
+	glVertex3f(0., 15., 0.)
+
+	glColor3f(1.0, .0, 1.0)
+	glVertex3f(0.0, 0.0, 0.0)
+	glVertex3f(0., 0., 15.)
+
+	glEnd()
 
 	glRotatef(az, 0.0, 1.0, 0.0)  # Yaw,   rotate around y-axis
 	glRotatef(ay, 1.0, 0.0, 0.0)  # Pitch, rotate around x-axis
@@ -98,13 +113,13 @@ def read_data(gyro, accelerometer):
 	ax = ay = az = 0.0
 
 	# angles based on accelerometer
-	ax = np.arctan2(accelerometer[0], np.square(pow(accelerometer[1], 2) + pow(accelerometer[2], 2))) * 180. / np.pi
-	ay = np.arctan2(accelerometer[1], np.square(pow(accelerometer[0], 2) + pow(accelerometer[2], 2))) * 180. / np.pi
-
+	ay = np.arctan2(accelerometer[1], np.sqrt(pow(accelerometer[0], 2) + pow(accelerometer[2], 2))) * 180. / np.pi
+	ax = np.arctan2(accelerometer[0], np.sqrt(pow(accelerometer[1], 2) + pow(accelerometer[2], 2))) * 180. / np.pi
+	print ax, ay
 	# angles based on gyro(deg / s)
-	gx += gyro[0] / 60
-	gy -= gyro[1] / 60
-	gz += gyro[2] / 60
+	gx += gyro[0] / 8
+	gy -= gyro[1] / 8
+	gz += gyro[2] / 8
 
 	# weighting both measurments
 	gx = gx * 0.96 + ax * 0.04
@@ -139,7 +154,7 @@ if __name__ == '__main__':
 			break
 		read_data(
 			gyro=[0., 0., 0.],  # x, y, z
-			accelerometer=[0.2, -9.8, 0.2]  # x, y, z
+			accelerometer=[6.8, 5.3, 6.8]  # x, y, z
 		)
 		draw()
 
