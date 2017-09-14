@@ -171,6 +171,7 @@ class Drone(object):
         """
         # Todo: We have to discuss where to put this... Does this belong to the drone?
         if not self.simulation:
+            # todo: we need to know marker global position
             measurements = {'tvecs': []}
             # get current image
             frame = self.capture_screen()
@@ -186,15 +187,14 @@ class Drone(object):
             tvecs = np.load(os.path.join('resources', 'calibration','cam_broke_tvecs.npy'))
 
             # detection
-            corners, ids, rejecected = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=paramters)
+            corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=paramters)
             # Todo: check if 25 cm is the correct thing here:
             rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 25, mtx, dist, rvecs, tvecs)
-
             if ids:
                 for i, id in enumerate(ids):
-                    gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i], tvecs[i], 25)
-                    measurements['tvecs'].append(tvecs[i])
-                    logging.info("Landmark measurement found: %s" % tvecs[i])
+                    gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 25)
+                    measurements['tvecs'].append(tvecs[i][0])
+                    logging.info("Landmark measurement found: %s" % tvecs[i][0])
             else:
                 logging.info("No landmark measurement found")
 
