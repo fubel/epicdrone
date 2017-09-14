@@ -1,6 +1,6 @@
 from __future__ import division
 
-from world import World
+from resources.world import World
 
 
 if __name__ == '__main__':

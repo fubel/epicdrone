@@ -1,1 +1,1 @@
-from world import app
+from app.resources.world import app

@@ -1,8 +1,9 @@
 from __future__ import division
 
-from psdrone.simulation import *
-from world import World
 from direct.gui.OnscreenText import OnscreenText, TextNode
+
+from resources.world import World
+from psdrone.simulation import *
 
 if __name__ == '__main__':
     # initialize Drone

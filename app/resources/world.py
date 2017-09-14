@@ -1,30 +1,16 @@
 from __future__ import division
 
 from panda3d.core import loadPrcFile
+
 loadPrcFile("config/Config.prc")
-
-from psdrone.simulation import *
-
 
 import numpy as np
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
-from direct.actor.Actor import Actor
 from panda3d.core import TransparencyAttrib
 from direct.gui.OnscreenText import OnscreenText, TextNode
 from direct.directtools.DirectGeometry import LineNodePath
-from psdrone.drone import Drone
-
-D = DummyDrone(np.array([3.5, 1., 2.]), 0)
-K = Kalman1D(D)
-
-movements = [np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), 
-             np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
-             np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]), np.array([+1.0, 0, 0]),
-             np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0]), np.array([-1.0, 0, 0])]
-
-# mesh for kalman gaussian vis
-x = np.linspace(D.x_range[0], D.x_range[1], 500)
+from app.resources.drone import Drone
 
 
 class World(ShowBase):
@@ -199,6 +185,9 @@ class World(ShowBase):
 
     def get_dimensions(self):
         return [self.room_dimentions[0]/100., self.room_dimentions[1]/100.]
+
+    def get_drone(self):
+        return self.drone_instance
 
     def set_markers(self, markers):
         self.markers = []
