@@ -38,13 +38,6 @@ while(True):
     aruco_dict = aruco.Dictionary_get(cv2.aruco.DICT_5X5_100)
     parameters =  aruco.DetectorParameters_create()
 
-    #print(parameters)
-
-    '''    detectMarkers(...)
-        detectMarkers(image, dictionary[, corners[, ids[, parameters[, rejectedI
-        mgPoints]]]]) -> corners, ids, rejectedImgPoints
-        '''
-        #lists of ids and the corners beloning to each id
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
     print(corners)
     gray = aruco.drawDetectedMarkers(gray, corners)
@@ -56,13 +49,12 @@ while(True):
     tvecs = np.load('cam_broke_tvecs.npy')
 
     rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.25, mtx, dist, rvecs, tvecs)
-    for i, id in enumerate(ids):
-        gray = cv2.aruco.drawAxis(gray, mtx, dist, rvecs[i], tvecs[i], 0.25)
-        print rvecs[i], tvecs[i]
-        logs.append([corners, rvecs[i], tvecs[i]])
+    if ids:
+        for i, id in enumerate(ids):
+            gray = cv2.aruco.drawAxis(gray, mtx, dist, rvecs[i], tvecs[i], 0.25)
+            print rvecs[i], tvecs[i]
+            logs.append([corners, rvecs[i], tvecs[i]])
 
-    #print(rejectedImgPoints)
-    # Display the resulting frame
     cv2.imshow('frame',gray)
     if cv2.waitKey(1) and (drone.getKey() == ' '):
         break
