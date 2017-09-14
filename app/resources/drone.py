@@ -5,6 +5,7 @@ import logging
 import app.libs.ps_drone
 import time
 import cv2
+import os
 import math
 # logging settings:
 logging.basicConfig(level=logging.INFO)
@@ -164,6 +165,49 @@ class Drone(object):
         else:
             return None
 
+    def measure(self):
+        """
+        Computes a measurement vector
+        """
+        # Todo: We have to discuss where to put this... Does this belong to the drone?
+        if not self.simulation:
+            measurements = {'tvecs': []}
+            # get current image
+            frame = self.capture_screen()
+
+            # prepare aruco
+            aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_5X5_100)
+            parameters = cv2.aruco.DetectorParameters_create()
+
+            # load calibrations
+            mtx = np.load(os.path.join('resources', 'calibration', 'cam_broke_mtx.npy'))
+            dist = np.load(os.path.join('resources', 'calibration','cam_broke_dist.npy'))
+            rvecs = np.load(os.path.join('resources', 'calibration','cam_broke_rvecs.npy'))
+            tvecs = np.load(os.path.join('resources', 'calibration','cam_broke_tvecs.npy'))
+
+            # detection
+            corners, ids, rejecected = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=paramters)
+            # Todo: check if 25 cm is the correct thing here:
+            rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 25, mtx, dist, rvecs, tvecs)
+
+            if ids:
+                for i, id in enumerate(ids):
+                    gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i], tvecs[i], 25)
+                    measurements['tvecs'].append(tvecs[i])
+                    logging.info("Landmark measurement found: %s" % tvecs[i])
+            else:
+                logging.info("No landmark measurement found")
+
+            # fuse landmark measurements
+            p = 1/len(measurements['tvecs']) * sum(measurements['tvecs'])
+
+            # velocity measurement
+            v = self.get_velocity()
+
+            # complete measurement
+            m = np.r_[p, v]
+
+            return m
 
 if __name__ == '__main__':
     my_drone = Drone(simulation=True)
