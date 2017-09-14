@@ -4,7 +4,7 @@ import numpy as np
 import logging
 import ps_drone
 import time
-
+import math
 # logging settings:
 logging.basicConfig(level=logging.INFO)
 
@@ -13,7 +13,8 @@ class Drone(object):
 
     simulation = None
     position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
-    orientation = [0, 0, 0] # heading, pitch, roll
+    orientation = [0, 0, 0] # heading, pitch, roll (angle in degrees)
+    velocity = [0, 0, 0] # x,y,z in mm/s
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
 
@@ -83,8 +84,49 @@ class Drone(object):
             my_drone.psdrone.NavData["magneto"][10]) + " " + str(
             my_drone.psdrone.NavData["magneto"][11])
 
+    def get_velocity(self):
+        """returns velocity [v_x,v_y,v_z] in mm/s"""
+        if self.simulation:
+            return self.velocity
+        else:
+            return self.psdrone.NavData["demo"][4]
+
+
+    def get_orientation_normvector(self):
+        heading, pitch, roll = self.get_orientation().map(math.radians)
+
+        yawMatrix = np.matrix([
+            [math.cos(heading), -math.sin(heading), 0],
+            [math.sin(heading), math.cos(heading), 0],
+            [0, 0, 1]
+        ])
+
+        pitchMatrix = np.matrix([
+            [math.cos(pitch), 0, math.sin(pitch)],
+            [0, 1, 0],
+            [-math.sin(pitch), 0, math.cos(pitch)]
+        ])
+
+        rollMatrix = np.matrix([
+            [1, 0, 0],
+            [0, math.cos(roll), -math.sin(roll)],
+            [0, math.sin(roll), math.cos(roll)]
+        ])
+
+        R = yawMatrix * pitchMatrix * rollMatrix
+
+        theta = math.acos(((R[0, 0] + R[1, 1] + R[2, 2]) - 1) / 2)
+        multi = 1 / (2 * math.sin(theta))
+
+        rx = multi * (R[2, 1] - R[1, 2]) * theta
+        ry = multi * (R[0, 2] - R[2, 0]) * theta
+        rz = multi * (R[1, 0] - R[0, 1]) * theta
+
+        return [rx, ry, rz]
+
 
 if __name__ == '__main__':
     my_drone = Drone(simulation=False)
     while True:
-        print(my_drone.get_data_dump())
+        #print(my_drone.get_data_dump())
+        print my_drone.get_orientation_normvector()
