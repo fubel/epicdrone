@@ -66,6 +66,8 @@ while(True):
             camera_rotation, _ = cv2.Rodrigues(R.transpose())
             # -R.t()*translation_vector;
             camera_translation = -R.transpose().dot(tvecs[i][0].transpose())
+            # camera position with respect to the landmark
+            v = camera_rotation + camera_translation
 
     cv2.imshow('frame',gray)
     if cv2.waitKey(1) and (drone.getKey() == ' '):
