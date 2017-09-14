@@ -20,13 +20,20 @@ class Drone(object):
     postion_by_input = False
 
     def __init__(self, simulation=True):
-
+        # simulation flag
         self.simulation = simulation
-        if (self.simulation==False):
+
+        if not self.simulation:
+            # general startup
             self.psdrone = libs.ps_drone.Drone()
             self.psdrone.debug = True
             self.psdrone.startup()
             self.psdrone.reset()
+            self.psdrone.useDemoMode(False)
+            self.psdrone.addNDpackage(["demo"])
+            self.psdrone.addNDpackage(["all"])
+
+            # connection
             timeCurrent = time.time()
             while (self.psdrone.getBattery()[0] == -1):
                 if(time.time() - timeCurrent >= 5):
@@ -34,10 +41,16 @@ class Drone(object):
                 time.sleep(0.1)  # Reset completed ?
             print ("Battery :" + str(self.psdrone.getBattery()[0]) + " % " + str(self.psdrone.getBattery()[1]))
 
-            self.psdrone.useDemoMode(False)
-            self.psdrone.addNDpackage(["demo"])
-            self.psdrone.addNDpackage(["all"])
+            # start video stream (caution: we try HD here, that might not work well)
+            self.psdrone.setConfigAllID()
+            self.psdrone.hdVideo()
+            self.psdrone.frontCam()
+            self.CDC = self.psdrone.ConfigDataCount
+            while self.CDC == self.psdrone.ConfigDataCount:
+                time.sleep(0.0001)
+            self.psdrone.startVideo()
 
+            # get nav data
             timeCurrent = time.time()
             while True:
                 if "magneto" in self.psdrone.NavData:
@@ -134,6 +147,13 @@ class Drone(object):
         rot_z = [-np.sin(a), np.cos(b) * np.sin(c), np.cos(b) * np.cos(c)]
 
         return np.array([rot_x, rot_y, rot_z])
+
+    def get_aruco(self):
+        """
+        Looks for Aruco markers in video stream to compute a measurement
+        Returns:
+            A (position) measurement.
+        """
 
 
 if __name__ == '__main__':
