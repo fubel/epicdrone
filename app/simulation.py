@@ -18,15 +18,11 @@ if __name__ == '__main__':
     x = np.linspace(D.x_range[0], D.x_range[1], 500)
 
     world = World()
-    dimensions = world.get_dimensions()
 
-    world.set_markers([
-        [[dimensions[0]/2, 1.5, 0.01], [0, 0, 0]],
-        [[dimensions[0]/2, 1.5, dimensions[1]-0.01], [0, 0, 0]],
-        [[dimensions[0]-0.01, 1.5, dimensions[1]/2], [90, 0, 0]],
-        [[0.01, 1.5, dimensions[1]/2], [90, 0, 0]]
-    ])
+    # one marker in the middle of the four walls
+    world.set_default_markers()
 
+    # create custom line opbjects for later use
     def initialize_world(world):
         world.l1 = world.line_model(0., 1., 0.)
         world.l2 = world.line_model(1., 0., 0.)

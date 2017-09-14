@@ -13,6 +13,7 @@ from direct.actor.Actor import Actor
 from panda3d.core import TransparencyAttrib
 from direct.gui.OnscreenText import OnscreenText, TextNode
 from direct.directtools.DirectGeometry import LineNodePath
+from psdrone.drone import Drone
 
 D = DummyDrone(np.array([3.5, 1., 2.]), 0)
 K = Kalman1D(D)
@@ -31,13 +32,15 @@ class World(ShowBase):
     fps_text = fps_text2 = fps_text3 = fps_text4 = None
     room_dimentions = []
     camera_position = [1468, 1177, 1160, -126, -38, 0]  # x y z h p r
-    drone_position = [200, 400, 150, 0, 0, 0]  # x y z h p r
+    drone = None
+    drone_instance = None
     markers = {}
     marker_lines = {}
     marker_lines_observed = {}
     active_keys = {}
+    loop_callback = None
 
-    def __init__(self, width = 6.78, length = 5.82):
+    def __init__(self, width = 6.78, length = 5.82, simulation=True):
         ShowBase.__init__(self)
 
         width *= 100
@@ -50,6 +53,7 @@ class World(ShowBase):
         self.wall4 = self.wall_model(width, length, 0, length, -90)
 
         self.drone = self.drone_model()
+        self.drone_instance = Drone(simulation=simulation)
 
         # Add the spinCameraTask procedure to the task manager.
         self.tick_loop = self.taskMgr.add(self.tick, "tick_loop")
@@ -96,6 +100,8 @@ class World(ShowBase):
             self.camera_position[4] += parameter[1]
 
     def move_drone(self, axis, direction):
+        pass
+        '''
         if axis == "x":
             self.drone_position[0] += 5 * direction
         if axis == "y":
@@ -104,6 +110,7 @@ class World(ShowBase):
             self.drone_position[2] += 1 * direction
         if axis == "h":
             self.drone_position[3] += direction
+        '''
 
     def tick(self, task):
 
@@ -111,10 +118,16 @@ class World(ShowBase):
             if self.active_keys[key] is not None:
                 self.active_keys[key][0](self.active_keys[key][1])
 
-        self.loop_callback(self, task)
+        if self.loop_callback is not None:
+            self.loop_callback(self, task)
 
         self.camera.setPos(self.camera_position[0], self.camera_position[1], self.camera_position[2])
         self.camera.setHpr(-self.camera_position[3], self.camera_position[4], self.camera_position[5])
+
+        drone_position = self.convert_position(self.drone_instance.get_position())
+        drone_orientation = self.drone_instance.get_orientation()
+        self.drone.setPos(drone_position[0], drone_position[1], drone_position[2])
+        self.drone.setHpr(drone_orientation[0], drone_orientation[1], drone_orientation[2])
 
         if task.time > 0:
             if self.fps_text is not None:
@@ -136,8 +149,8 @@ class World(ShowBase):
         return Task.cont
 
     def drone_model(self):
-        drone = self.loader.loadModel("models/box")
-        drone.setScale(30, 30, 20)
+        drone = self.loader.loadModel("models/drone")
+        drone.setScale(15, 15, 10)
         drone.reparentTo(self.render)
         return drone
 
@@ -192,6 +205,16 @@ class World(ShowBase):
         for marker in markers:
             self.markers.append(self.marker_model(self.convert_position(marker[0]), marker[1]))
 
+    def set_default_markers(self):
+        dimensions = self.get_dimensions()
+
+        self.set_markers([
+            [[dimensions[0] / 2, 1.5, 0.01], [0, 0, 0]],
+            [[dimensions[0] / 2, 1.5, dimensions[1] - 0.01], [0, 0, 0]],
+            [[dimensions[0] - 0.01, 1.5, dimensions[1] / 2], [90, 0, 0]],
+            [[0.01, 1.5, dimensions[1] / 2], [90, 0, 0]]
+        ])
+
     def get_markers(self):
         return self.markers
 
@@ -203,6 +226,7 @@ class World(ShowBase):
 
     def hook_loop(self, callback):
         self.loop_callback = callback
+
 
 if __name__ == '__main__':
     app = World()
