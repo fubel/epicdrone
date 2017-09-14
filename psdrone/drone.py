@@ -82,13 +82,36 @@ class Drone(object):
 
 
     def get_orientation_normvector(self):
-        heading, pitch, roll = self.get_orientation()
+        heading, pitch, roll = self.get_orientation().map(math.radians)
 
-        x = math.cos(heading) * math.cos(pitch)
-        y = math.sin(heading) * math.cos(pitch)
-        z = math.sin(pitch)
+        yawMatrix = np.matrix([
+            [math.cos(heading), -math.sin(heading), 0],
+            [math.sin(heading), math.cos(heading), 0],
+            [0, 0, 1]
+        ])
 
-        return [x,y,z]
+        pitchMatrix = np.matrix([
+            [math.cos(pitch), 0, math.sin(pitch)],
+            [0, 1, 0],
+            [-math.sin(pitch), 0, math.cos(pitch)]
+        ])
+
+        rollMatrix = np.matrix([
+            [1, 0, 0],
+            [0, math.cos(roll), -math.sin(roll)],
+            [0, math.sin(roll), math.cos(roll)]
+        ])
+
+        R = yawMatrix * pitchMatrix * rollMatrix
+
+        theta = math.acos(((R[0, 0] + R[1, 1] + R[2, 2]) - 1) / 2)
+        multi = 1 / (2 * math.sin(theta))
+
+        rx = multi * (R[2, 1] - R[1, 2]) * theta
+        ry = multi * (R[0, 2] - R[2, 0]) * theta
+        rz = multi * (R[1, 0] - R[0, 1]) * theta
+
+        return [rx, ry, rz]
 
 
 if __name__ == '__main__':
