@@ -1,0 +1,75 @@
+<CoordinateSystem> { Z-Up }
+
+<Comment> {
+  "maya2egg plane.mb plane.egg"
+}
+<Group> groundPlane_transform {
+}
+<Group> pPlane1 {
+  <VertexPool> pPlaneShape1.verts {
+    <Vertex> 1 {
+      -1 -1 -1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -1 -1 1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -1 1 -1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      -1 1 1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 5 {
+      1 -1 -1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 6 {
+      1 -1 1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 7 {
+      1 1 -1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 8 {
+      1 1 1
+      <Normal> { 0 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <Normal> { 0 0 0 }
+    <VertexRef>{ 1 5 6 2 <Ref> { pPlaneShape1.verts } }
+  }
+  <Polygon> {
+    <Normal> { 0 0 0 }
+    <VertexRef>{ 6 5 7 8 <Ref> { pPlaneShape1.verts } }
+  }
+  <Polygon> {
+    <Normal> { 0 0 0 }
+    <VertexRef>{ 1 2 4 3 <Ref> { pPlaneShape1.verts } }
+  }
+  <Polygon> {
+    <Normal> { 0 0 0 }
+    <VertexRef>{ 3 4 8 7 <Ref> { pPlaneShape1.verts } }
+  }
+  <Polygon> {
+    <Normal> { 0 0 0 }
+    <VertexRef>{ 6 8 4 2 <Ref> { pPlaneShape1.verts } }
+  }
+  <Polygon> {
+    <Normal> { 0 0 0 }
+    <VertexRef>{ 1 3 7 5 <Ref> { pPlaneShape1.verts } }
+  }
+}
