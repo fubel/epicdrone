@@ -119,9 +119,9 @@ class Drone(object):
     def get_velocity(self):
         """returns velocity [v_x,v_y,v_z] in mm/s"""
         if self.simulation:
-            return self.velocity
+            return np.array(self.velocity)
         else:
-            return self.psdrone.NavData["demo"][4]
+            return np.array(self.psdrone.NavData["demo"][4])
 
     def get_rotation_matrix(self):
         heading, pitch, roll = map(np.deg2rad, self.get_orientation())
@@ -138,5 +138,3 @@ class Drone(object):
 
 if __name__ == '__main__':
     my_drone = Drone(simulation=True)
-
-    print (np.array([1, 1, 1]).dot(my_drone.get_rotation_matrix()))
