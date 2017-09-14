@@ -1,5 +1,4 @@
 from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import logging
@@ -9,10 +8,19 @@ import time
 # logging settings:
 logging.basicConfig(level=logging.INFO)
 
+
 class Drone(object):
-    def __init__(self, simulation=False):
-        if (simulation==False):
-            self.flag = False
+
+    simulation = None
+    position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
+    orientation = [0, 0, 0] # heading, pitch, roll
+    _ax = _ay = _az = 0.0
+    _gx = _gy = _gz = 0.0
+
+    def __init__(self, simulation=True):
+
+        self.simulation = simulation
+        if (self.simulation==False):
             self.psdrone = ps_drone.Drone()
             self.psdrone.debug = True
             self.psdrone.startup()
@@ -31,13 +39,41 @@ class Drone(object):
                 if(time.time() - timeCurrent >= 5):
                     raise Exception("No NavData")
 
+    def get_position(self):
+        return self.position
 
-        def getPosition(self):
-            self.psdrone
+    def get_orientation(self):
+        if (self.simulation == False):
+            gyro = self.psdrone.NavData["raw_measures"][1]  # x, y, z
+            accelerometer = self.psdrone.NavData["raw_measures"][0]  # x, y, z
+
+            print accelerometer, gyro
+
+            self._ax = self._ay = self._az = 0.0
+
+            # angles based on accelerometer
+            self._ay = np.arctan2(accelerometer[1], np.sqrt(pow(accelerometer[0], 2) + pow(accelerometer[2], 2))) * 180. / np.pi
+            self._ax = np.arctan2(accelerometer[0], np.sqrt(pow(accelerometer[1], 2) + pow(accelerometer[2], 2))) * 180. / np.pi
+            # angles based on gyro(deg / s)
+            self._gx += gyro[0] / 8.
+            self._gy -= gyro[1] / 8.
+            self._gz += gyro[2] / 8.
+
+            # weighting both measurments
+            self._gx = self._gx * 0.96 + self._ax * 0.04
+            self._gy = self._gy * 0.96 + self._ay * 0.04
+
+            self.orientation = [-self._ax, self._ay, self._az]
+
+        return self.orientation
+
+    def get_data_dump(self):
+        return str(my_drone.psdrone.NavData["demo"][0][2]) + " " + " " + str(
+            my_drone.psdrone.NavData["magneto"][10]) + " " + str(
+            my_drone.psdrone.NavData["magneto"][11])
+
 
 if __name__ == '__main__':
-    my_drone = Drone()
-    if my_drone.flag== False:
-        while True:
-            print(str(my_drone.psdrone.NavData["demo"][0][2]) + " " + " " + str(my_drone.psdrone.NavData["magneto"][10]) + " " + str(
-                my_drone.psdrone.NavData["magneto"][11]))
+    my_drone = Drone(simulation=False)
+    while True:
+        print(my_drone.get_data_dump())
