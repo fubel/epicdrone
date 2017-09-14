@@ -141,7 +141,7 @@ class Drone1DEKF(ExtendedKalmanFilter):
 
 def main():
 
-    test_linearKF = KalmanFilter(dim_x=6, dim_z=6)
+    test_linearKF = KalmanFilter(dim_x=6, dim_z=3)
 
     delta_t = 1.                        # 1 second
 
@@ -160,7 +160,7 @@ def main():
                                 [0.,0.,0.,0.,1.,0.],
                                 [0.,0.,0.,0.,0.,1.]])
 
-    # measrument matrix
+    # measreument matrix
     test_linearKF.H = np.array([[1.,0.,0.,0.,0.,0.],
                                 [0.,1.,0.,0.,0.,0.],
                                 [0.,0.,1.,0.,0.,0.]])
