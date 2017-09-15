@@ -106,6 +106,10 @@ class Drone(object):
         self.orientation = orientation
         return self
 
+    def set_position(self, position):
+        self.position = position
+        return self
+
     def get_velocity(self):
         """returns velocity [v_x, v_y, v_z] in mm/s"""
         if self.simulation:

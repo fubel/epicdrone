@@ -1,9 +1,12 @@
+from __future__ import division
+
 import cv2
 import time
 import numpy as np
 import os
 import logging
 
+logging.basicConfig(level=logging.INFO)
 
 def capture_screen(drone):
     """
@@ -11,7 +14,7 @@ def capture_screen(drone):
     """
     if not drone.simulation:
         # wait until next available video frame
-        while drone.psdrone.VideoImageCount == drone.psdrone.IMC:
+        while drone.psdrone.VideoImageCount == drone.IMC:
             time.sleep(0.01)
         drone.IMC = drone.psdrone.VideoImageCount
         frame = drone.psdrone.VideoImage
@@ -24,17 +27,10 @@ def measure(drone, markers=None):
     """
     Computes a measurement vector
     """
-    # todo: remove that
-    if not markers:
-        markers = {
-            1: np.array([2.95, 1.65, 2.85]),
-            3: np.array([2.05, 1.65, 2.85])
-        }
-
     measurements = []
 
     # get current image
-    frame = drone.capture_screen()
+    frame = capture_screen(drone)
 
     # prepare aruco
     aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_5X5_100)
@@ -49,20 +45,28 @@ def measure(drone, markers=None):
     # detection
     corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
 
-    rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.2, mtx, dist, rvecs, tvecs)
-    if ids:
+    rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.176, mtx, dist, rvecs, tvecs)
+    if type(ids) == np.ndarray:
         for i, id in enumerate(ids):
             id = id[0]
-            gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 0.2)
-            measurements.append(markers[id] - tvecs[i][0])
-            logging.info("Landmark measurement found: %s" % tvecs[i][0])
+            gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 0.176)
+            tvecs[i][0][1] *= -1
+            measurements.append(markers[id][0] - tvecs[i][0])
+            logging.info("Measurement to %s found: %s" % (id, (markers[id][0]-tvecs[i][0])))
     else:
         logging.info("No landmark measurement found")
 
+    cv2.imshow('frame', frame)
+    cv2.waitKey(1)
+
     # fuse landmark measurements
-    p = 1 / len(measurements) * sum(measurements)
+    if len(measurements) == 0:
+        p = [0, 0, 0]
+    else:
+        p = 1 / len(measurements) * sum(measurements)
 
     # complete measurement
-    m = np.r_[p, np.array([0.,0.,0.])]
+    #m = np.r_[p, np.array([0.,0.,0.])]
+    m = p
     logging.info("Measurement vector: %s" % m)
     return m
