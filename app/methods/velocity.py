@@ -3,8 +3,8 @@ from __future__ import division
 import numpy as np
 
 
-def get_rotation_matrix():
-    heading, pitch, roll = map(np.deg2rad, self.get_orientation())
+def get_rotation_matrix(drone):
+    heading, pitch, roll = map(np.deg2rad, drone.get_orientation())
     a, b, c = heading, pitch, roll
 
     rot_x = [np.cos(a) * np.cos(b), np.cos(a) * np.sin(b) * np.sin(c) - np.sin(a) * np.cos(c),
@@ -17,7 +17,7 @@ def get_rotation_matrix():
 
 def position_by_velocity(drone):
     velocity_drone = drone.get_velocity()
-    rotation_matrix = get_rotation_matrix()
+    rotation_matrix = get_rotation_matrix(drone)
 
     velocity_norm = velocity_drone.dot(rotation_matrix)
     print velocity_norm

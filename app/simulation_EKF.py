@@ -5,46 +5,46 @@ import numpy as np
 import matplotlib
 from resources.drone import Drone
 from filterpy.kalman import KalmanFilter
+import methods.velocity
 matplotlib.rcParams['backend'] = "TkAgg"
 
 
-def main():
+class Velocity_Markerposition_KF(KalmanFilter):
 
-    test_linearKF = KalmanFilter(dim_x=6, dim_z=6)
+    def __init__(self):
+        super(Velocity_Markerposition_KF, self).__init__(dim_x=6, dim_z=6)
 
-    # 1/60 second
-    delta_t = 1/60.                     # 1 second
+        delta_t = 1/60.                     # 1/60 seconds
 
-    test_linearKF.x = np.array([[1.],   # pos_x
-                                [1.],   # pos_z
-                                [1.],   # pos_y
-                                [0.],   # vel_x
-                                [0.],   # vel_z
-                                [0.]])  # vel_y
+        self.x = np.array([[1.],   # pos_x
+                                    [1.],   # pos_z
+                                    [1.],   # pos_y
+                                    [0.],   # vel_x
+                                    [0.],   # vel_z
+                                    [0.]])  # vel_y
 
-    # state transition matrix
-    test_linearKF.F = np.array([[1.,0.,0.,delta_t,0.,0.],
-                                [0.,1.,0.,0.,delta_t,0.],
-                                [0.,0.,1.,0.,0.,delta_t],
-                                [0.,0.,0.,1.,0.,0.],
-                                [0.,0.,0.,0.,1.,0.],
-                                [0.,0.,0.,0.,0.,1.]])
+        # state transition matrix
+        self.F = np.array([[1.,0.,0.,delta_t,0.,0.],
+                                    [0.,1.,0.,0.,delta_t,0.],
+                                    [0.,0.,1.,0.,0.,delta_t],
+                                    [0.,0.,0.,1.,0.,0.],
+                                    [0.,0.,0.,0.,1.,0.],
+                                    [0.,0.,0.,0.,0.,1.]])
 
-    # measreument matrix
-    test_linearKF.H = np.array([[1.,0.,0.,0.,0.,0.],
-                                [0.,1.,0.,0.,0.,0.],
-                                [0.,0.,1.,0.,0.,0.],
-                                [0.,0.,0.,1.,0.,0.],
-                                [0.,0.,0.,0.,1.,0.],
-                                [0.,0.,0.,0.,0.,1.]])
+        # measreument matrix
+        self.H = np.array([[1.,0.,0.,0.,0.,0.],
+                                    [0.,1.,0.,0.,0.,0.],
+                                    [0.,0.,1.,0.,0.,0.],
+                                    [0.,0.,0.,1.,0.,0.],
+                                    [0.,0.,0.,0.,1.,0.],
+                                    [0.,0.,0.,0.,0.,1.]])
 
+if __name__ == '__main__':
+    test_linearKF = Velocity_Markerposition_KF()
     epic_drone = Drone(simulation=True)
 
     while True:
-        velocity_drone = epic_drone.get_velocity()
-        rotation_matrix = epic_drone.get_rotation_matrix()
-
-        velocity_norm = velocity_drone.dot(rotation_matrix)
+        velocity_norm = methods.velocity.position_by_velocity(epic_drone)
 
         measurement = np.array([[3.5],
                                 [1.],
@@ -56,7 +56,4 @@ def main():
         test_linearKF.predict()
         test_linearKF.update(measurement)
 
-        logging.info("%s"%test_linearKF.x)
-
-if __name__ == '__main__':
-    main()
+        logging.info("%s" % test_linearKF.x)
