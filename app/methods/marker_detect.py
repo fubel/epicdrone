@@ -11,7 +11,7 @@ def capture_screen(drone):
     """
     if not drone.simulation:
         # wait until next available video frame
-        while drone.psdrone.VideoImageCount == IMC:
+        while drone.psdrone.VideoImageCount == drone.psdrone.IMC:
             time.sleep(0.01)
         drone.IMC = drone.psdrone.VideoImageCount
         frame = drone.psdrone.VideoImage
