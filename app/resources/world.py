@@ -92,6 +92,7 @@ class World(ShowBase):
         self.accept("d", self.control_drone, ["d"])
         self.accept("q", self.control_drone, ["q"])
         self.accept("e", self.control_drone, ["e"])
+        self.accept("m", self.control_drone, ["m"])
         self.accept("r", self.control_drone, ["r"])
         self.accept("f", self.control_drone, ["f"])
         self.keypress_repeat("4", self.move_camera, ["x", -1])
@@ -121,14 +122,16 @@ class World(ShowBase):
             self.drone_instance.move(0., .2, 0., 0.)
         elif key == "s":
             self.drone_instance.move(0., -.2, 0., 0.)
-        elif key == "a":
-            self.drone_instance.move(-.2, 0., 0., 0.)
         elif key == "d":
+            self.drone_instance.move(-.2, 0., 0., 0.)
+        elif key == "a":
             self.drone_instance.move(.2, 0., 0., 0.)
         elif key == "q":
             self.drone_instance.move(0., 0., 0., 0.2)
         elif key == "e":
             self.drone_instance.move(0., 0., 0., -0.2)
+        elif key == "m":
+            self.drone.mtrim()
         elif key == "r":
             self.drone_instance.move(0., 0., .2, 0.)
         elif key == "f":
