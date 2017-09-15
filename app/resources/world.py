@@ -262,12 +262,12 @@ class World(ShowBase):
     def set_default_markers(self):
         dimensions = self.get_dimensions()
 
-        self.set_markers([
-            [[dimensions[0] / 2, 1.5, 0.01], [0, 0, 0]],
-            [[dimensions[0] / 2, 1.5, dimensions[1] - 0.01], [0, 0, 0]],
-            [[dimensions[0] - 0.01, 1.5, dimensions[1] / 2], [90, 0, 0]],
-            [[0.01, 1.5, dimensions[1] / 2], [90, 0, 0]]
-        ])
+        self.set_markers({
+            0: [[dimensions[0] / 2, 1.5, 0.01], [0, 0, 0]],
+            1: [[dimensions[0] / 2, 1.5, dimensions[1] - 0.01], [0, 0, 0]],
+            2: [[dimensions[0] - 0.01, 1.5, dimensions[1] / 2], [90, 0, 0]],
+            3: [[0.01, 1.5, dimensions[1] / 2], [90, 0, 0]]
+        })
 
     def get_markers(self):
         return self.markers
