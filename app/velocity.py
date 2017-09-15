@@ -13,10 +13,10 @@ if __name__ == '__main__':
     def sim_loop(world, task):
         drone = world.get_drone()
         v = drone.get_velocity()
-
-        drone.position[1][0]+= v[0]/10E3*1/60
-        drone.position[1][1]+= v[2]/10E3*1/60
-        drone.position[1][2]+= v[1]/10E3*1/60
+        print v
+        drone.position[0] += v[0]/1000/60
+        drone.position[1] += v[2]/1000/60
+        drone.position[2] += v[1]/1000/60
 
 
     world.hook_loop(sim_loop)

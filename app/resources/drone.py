@@ -71,6 +71,9 @@ class Drone(object):
             self.position[2] += leftright * 0.05
             self.position[1] += downup * 0.05
 
+    def get_key(self,):
+        return self.psdrone.getKey()
+
     def set_position_by_input(self, value=True):
         self.postion_by_input = value
 
