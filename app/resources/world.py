@@ -255,9 +255,9 @@ class World(ShowBase):
         return self.drone_instance
 
     def set_markers(self, markers):
-        self.markers = []
-        for marker in markers:
-            self.markers.append(self.marker_model(self.convert_position(marker[0]), marker[1]))
+        self.markers = {}
+        for key, marker in markers.iteritems():
+            self.markers[key] = self.marker_model(self.convert_position(marker[0]), marker[1])
 
     def set_default_markers(self):
         dimensions = self.get_dimensions()
