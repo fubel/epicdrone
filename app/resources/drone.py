@@ -187,7 +187,7 @@ class Drone(object):
             tvecs = np.load(os.path.join('resources', 'calibration','cam_broke_tvecs.npy'))
 
             # detection
-            corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=paramters)
+            corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
             # Todo: check if 25 cm is the correct thing here:
             rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 25, mtx, dist, rvecs, tvecs)
             if ids:
