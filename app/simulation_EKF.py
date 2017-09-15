@@ -9,19 +9,19 @@ import methods.velocity
 matplotlib.rcParams['backend'] = "TkAgg"
 
 
-class Velocity_Markerposition_KF(KalmanFilter):
+class Location_KF(KalmanFilter):
 
-    def __init__(self):
-        super(Velocity_Markerposition_KF, self).__init__(dim_x=6, dim_z=6)
+    def __init__(self, timestep = 1/60.):
+        super(Location_KF, self).__init__(dim_x=6, dim_z=6)
 
-        delta_t = 1/60.                     # 1/60 seconds
+        delta_t = timestep
 
         self.x = np.array([[1.],   # pos_x
-                                    [1.],   # pos_z
-                                    [1.],   # pos_y
-                                    [0.],   # vel_x
-                                    [0.],   # vel_z
-                                    [0.]])  # vel_y
+                            [1.],   # pos_z
+                            [1.],   # pos_y
+                            [0.],   # vel_x
+                            [0.],   # vel_z
+                            [0.]])  # vel_y
 
         # state transition matrix
         self.F = np.array([[1.,0.,0.,delta_t,0.,0.],
@@ -40,20 +40,26 @@ class Velocity_Markerposition_KF(KalmanFilter):
                                     [0.,0.,0.,0.,0.,1.]])
 
 if __name__ == '__main__':
-    test_linearKF = Velocity_Markerposition_KF()
+    drone_KF = Location_KF()
     epic_drone = Drone(simulation=True)
 
     while True:
         velocity_norm = methods.velocity.position_by_velocity(epic_drone)
 
-        measurement = np.array([[3.5],
-                                [1.],
-                                [2.],
+        # todo: get from aruco detection
+        aruco_norm = np.array([3.5, 1., 2.])
+
+        measurement = np.array([[aruco_norm[0]],
+                                [aruco_norm[1]],
+                                [aruco_norm[2]],
                                 [velocity_norm[0]],
                                 [velocity_norm[1]],
                                 [velocity_norm[2]]])
 
-        test_linearKF.predict()
-        test_linearKF.update(measurement)
+        # uses previous state + time
+        drone_KF.predict()
 
-        logging.info("%s" % test_linearKF.x)
+        # uses aruco-detection + velocity values from sensor
+        drone_KF.update(measurement)
+
+        logging.info("%s" % drone_KF.x)
