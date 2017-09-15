@@ -43,6 +43,14 @@ class Drone(object):
                 time.sleep(0.1)  # Reset completed ?
             print ("Battery :" + str(self.psdrone.getBattery()[0]) + " % " + str(self.psdrone.getBattery()[1]))
 
+            # get nav data
+            timeCurrent = time.time()
+            while True:
+                if "magneto" in self.psdrone.NavData:
+                    break
+                if (time.time() - timeCurrent >= 5):
+                    raise Exception("No NavData")
+
             # start video stream (caution: we try HD here, that might not work well)
             self.psdrone.setConfigAllID()
             self.psdrone.hdVideo()
@@ -53,13 +61,6 @@ class Drone(object):
             self.psdrone.startVideo()
             self.IMC = self.psdrone.VideoImageCount
 
-            # get nav data
-            timeCurrent = time.time()
-            while True:
-                if "magneto" in self.psdrone.NavData:
-                    break
-                if(time.time() - timeCurrent >= 5):
-                    raise Exception("No NavData")
 
     def startup(self):
         if not self.simulation:
