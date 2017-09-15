@@ -91,11 +91,18 @@ class Drone(object):
     def set_position_by_input(self, value=True):
         self.postion_by_input = value
 
+    def get_raw(self):
+        return self.psdrone.NavData
+
     def get_position(self):
         return self.position
 
     def get_orientation(self):
         return self.orientation
+
+    def set_orientation(self, orientation):
+        self.orientation = orientation
+        return self
 
     def get_velocity(self):
         """returns velocity [v_x, v_y, v_z] in mm/s"""

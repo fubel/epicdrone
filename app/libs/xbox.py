@@ -50,7 +50,7 @@ class Joystick:
         #
         # Read responses from 'xboxdrv' for upto 2 seconds, looking for controller/receiver to respond
         found = False
-        waitTime = time.time() + 15
+        waitTime = time.time() + 6
         while waitTime > time.time() and not found:
             readable, writeable, exception = select.select([self.pipe],[],[],0)
             if readable:

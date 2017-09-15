@@ -91,9 +91,9 @@ class World(ShowBase):
             self.drone_instance.move(0., .2, 0., 0.)
         elif key == "s":
             self.drone_instance.move(0., -.2, 0., 0.)
-        elif key == "a":
-            self.drone_instance.move(-.2, 0., 0., 0.)
         elif key == "d":
+            self.drone_instance.move(-.2, 0., 0., 0.)
+        elif key == "a":
             self.drone_instance.move(.2, 0., 0., 0.)
         elif key == "q":
             self.drone_instance.move(0., 0., 0., 0.2)
@@ -138,7 +138,10 @@ class World(ShowBase):
 
         if self.joy is not None:
             if self.joy.Back():
-                self.closeWindow(self)
+                self.closeWindow(self.win)
+                self.userExit()
+                self.shutdown()
+                self.destroy()
 
             # takeoff:
             if self.joy.A():
@@ -160,6 +163,7 @@ class World(ShowBase):
 
             (roll, throttle) = self.joy.leftStick()
             (yaw, pitch) = self.joy.rightStick()
+            print roll, pitch, throttle, yaw
             self.drone_instance.move(roll, pitch, throttle, yaw)
 
 
@@ -276,6 +280,10 @@ class World(ShowBase):
 
     def hook_loop(self, callback):
         self.loop_callback = callback
+
+    def shutdown(self):
+        if self.joy is not None:
+            self.joy.close()
 
 
 if __name__ == '__main__':
