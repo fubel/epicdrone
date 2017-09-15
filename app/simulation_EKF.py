@@ -40,26 +40,28 @@ class Location_KF(KalmanFilter):
                                     [0.,0.,0.,0.,0.,1.]])
 
 if __name__ == '__main__':
-    drone_KF = Location_KF()
+    delta_t = 1/60.0 #s
+    drone_KF = Location_KF(delta_t)
     epic_drone = Drone(simulation=True)
 
-    while True:
-        velocity_norm = methods.velocity.position_by_velocity(epic_drone)
+    velocity_norm = methods.velocity.position_by_velocity(epic_drone, delta_t)
 
-        # todo: get from aruco detection
-        aruco_norm = np.array([3.5, 1., 2.])
+    # todo: get from aruco detection
+    aruco_norm = np.array([3.5, 1., 2.])
 
-        measurement = np.array([[aruco_norm[0]],
-                                [aruco_norm[1]],
-                                [aruco_norm[2]],
-                                [velocity_norm[0]],
-                                [velocity_norm[1]],
-                                [velocity_norm[2]]])
+    measurement = np.array([[aruco_norm[0]],
+                            [aruco_norm[1]],
+                            [aruco_norm[2]],
+                            [velocity_norm[0]],
+                            [velocity_norm[1]],
+                            [velocity_norm[2]]])
 
-        # uses previous state + time
-        drone_KF.predict()
+    # uses previous state + time
+    drone_KF.predict()
 
-        # uses aruco-detection + velocity values from sensor
-        drone_KF.update(measurement)
+    logging.info("%s" % drone_KF.x)
 
-        logging.info("%s" % drone_KF.x)
+    # uses aruco-detection + velocity values from sensor
+    drone_KF.update(measurement)
+
+    logging.info("%s" % drone_KF.x)
