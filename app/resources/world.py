@@ -17,7 +17,7 @@ import libs.xbox as xbox
 class World(ShowBase):
 
     fps_text = fps_text2 = fps_text3 = fps_text4 = None
-    room_dimentions = []
+    room_dimentions = [0, 0]
     camera_position = [1468, 1177, 1160, -126, -38, 0]  # x y z h p r
     drone = None
     drone_instance = None
@@ -27,6 +27,8 @@ class World(ShowBase):
     active_keys = {}
     loop_callback = None
     joy = None
+    simulation = True
+    drone_started = False
 
     def __init__(self, width = 6.78, length = 5.82, simulation=True):
         ShowBase.__init__(self)
@@ -34,6 +36,7 @@ class World(ShowBase):
         width *= 100
         length *= 100
         self.room_dimentions = [width, length]
+        self.simulation = simulation
 
         self.wall1 = self.wall_model(0, 0, 0, width, 0)
         self.wall2 = self.wall_model(0, 0, 0, length, 90)
@@ -43,14 +46,24 @@ class World(ShowBase):
         self.drone = self.drone_model()
         self.drone_instance = Drone(simulation=simulation)
 
-        # Add the spinCameraTask procedure to the task manager.
-        self.tick_loop = self.taskMgr.add(self.tick, "tick_loop")
         try:
             self.joy = xbox.Joystick()
             print "Controller initialized"
         except:
             pass
+        # Add the spinCameraTask procedure to the task manager.
+        self.tick_loop = self.taskMgr.add(self.tick, "tick_loop")
 
+
+        self.accept("space", self.control_drone, [" "])
+        self.accept("c", self.control_drone, ["c"])
+        self.accept("x", self.control_drone, ["x"])
+        self.accept("w", self.control_drone, ["w"])
+        self.accept("a", self.control_drone, ["a"])
+        self.accept("s", self.control_drone, ["s"])
+        self.accept("d", self.control_drone, ["d"])
+        self.accept("q", self.control_drone, ["q"])
+        self.accept("e", self.control_drone, ["e"])
         self.keypress_repeat("4", self.move_camera, ["x", -1])
         self.keypress_repeat("6", self.move_camera, ["x", 1])
         self.keypress_repeat("8", self.move_camera, ["y", 1])
@@ -61,6 +74,31 @@ class World(ShowBase):
         self.keypress_repeat("9", self.move_camera, ["h", 1])
         self.keypress_repeat("arrow_up", self.move_camera, ["p", 1])
         self.keypress_repeat("arrow_down", self.move_camera, ["p", -1])
+
+    def control_drone(self, key):
+        if key == " ":
+            if not self.drone_started:
+                self.drone_started = True
+                self.drone_instance.takeoff()
+            else:
+                self.drone_started = False
+                self.drone_instance.land()
+        if key == "x":
+            self.drone_instance.emergency()
+        elif key == "c":
+            self.drone_instance.move(0., 0., 0., 0.)
+        elif key == "w":
+            self.drone_instance.move(0., .2, 0., 0.)
+        elif key == "s":
+            self.drone_instance.move(0., -.2, 0., 0.)
+        elif key == "a":
+            self.drone_instance.move(-.2, 0., 0., 0.)
+        elif key == "d":
+            self.drone_instance.move(.2, 0., 0., 0.)
+        elif key == "q":
+            self.drone_instance.move(0., 0., 0., 0.2)
+        elif key == "e":
+            self.drone_instance.move(0., 0., 0., -0.2)
 
     def keypress_repeat(self, key, callback, parameter):
         self.accept(key, self.keypress_start, [key, callback, parameter])
@@ -125,30 +163,7 @@ class World(ShowBase):
             self.drone_instance.move(roll, pitch, throttle, yaw)
 
 
-        # key = drone.get_key()
-        # if key == " ":
-        #     if not started:
-        #         drone.takeoff()
-        #     else:
-        #         drone.land()
-        # if key == "x":
-        #     drone.emergency()
-        # elif key == "0":
-        #     drone.hover()
-        # elif key == "c":
-        #     drone.move(0., 0., 0., 0.)
-        # elif key == "w":
-        #     drone.move(0., .2, 0., 0.)
-        # elif key == "s":
-        #     drone.move(0., -.2, 0., 0.)
-        # elif key == "a":
-        #     drone.move(-.2, 0., 0., 0.)
-        # elif key == "d":
-        #     drone.move(.2, 0., 0., 0.)
-        # elif key == "q":
-        #     drone.move(0., 0., 0., 0.2)
-        # elif key == "e":
-        #     drone.move(0., 0., 0., -0.2)
+
 
         if self.loop_callback is not None:
             self.loop_callback(self, task)
