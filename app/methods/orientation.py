@@ -8,6 +8,24 @@ _gx = _gy = _gz = 0
 
 last_10 = [[],[],[]]
 
+'''
+def calibrate(self, getxyz, stopfunc, wait=0):
+    magmax = list(getxyz())  # Initialise max and min lists with current values
+    magmin = magmax[:]
+    while not stopfunc():
+        if wait != 0:
+            if callable(wait):
+                wait()
+            else:
+                time.sleep_ms(wait)
+        magxyz = tuple(getxyz())
+        for x in range(3):
+            magmax[x] = max(magmax[x], magxyz[x])
+            magmin[x] = min(magmin[x], magxyz[x])
+    self.magbias = tuple(map(lambda a, b: (a + b) / 2, magmin, magmax))
+    '''
+
+
 def orientation_by_imu(drone):
     global _ax, _ay, _az
     global _gx, _gy, _gz
