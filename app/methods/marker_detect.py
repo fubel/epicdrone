@@ -48,12 +48,12 @@ def measure(drone, markers=None):
 
     # detection
     corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
-    # Todo: check if 25 cm is the correct thing here:
-    rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 25, mtx, dist, rvecs, tvecs)
+
+    rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.2, mtx, dist, rvecs, tvecs)
     if ids:
         for i, id in enumerate(ids):
             id = id[0]
-            gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 25)
+            gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 0.2)
             measurements.append(markers[id] - tvecs[i][0])
             logging.info("Landmark measurement found: %s" % tvecs[i][0])
     else:
