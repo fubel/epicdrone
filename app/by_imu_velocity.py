@@ -1,6 +1,8 @@
 from __future__ import division
 
 from resources.world import World
+from methods.orientation import orientation_by_imu
+from methods.velocity import position_by_velocity
 
 
 if __name__ == '__main__':
@@ -12,11 +14,8 @@ if __name__ == '__main__':
 
     def sim_loop(world, task):
         drone = world.get_drone()
-        v = drone.get_velocity()
-        print v
-        drone.position[0] += v[0]/1000/60
-        drone.position[1] += v[2]/1000/60
-        drone.position[2] += v[1]/1000/60
+        drone.set_orientation( orientation_by_imu(drone) )
+        drone.set_position( position_by_velocity(drone) )
 
 
     world.hook_loop(sim_loop)

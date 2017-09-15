@@ -11,6 +11,7 @@ from panda3d.core import TransparencyAttrib
 from direct.gui.OnscreenText import OnscreenText, TextNode
 from direct.directtools.DirectGeometry import LineNodePath
 from drone import Drone
+import libs.xbox as xbox
 
 
 class World(ShowBase):
@@ -25,6 +26,7 @@ class World(ShowBase):
     marker_lines_observed = {}
     active_keys = {}
     loop_callback = None
+    joy = None
 
     def __init__(self, width = 6.78, length = 5.82, simulation=True):
         ShowBase.__init__(self)
@@ -43,13 +45,12 @@ class World(ShowBase):
 
         # Add the spinCameraTask procedure to the task manager.
         self.tick_loop = self.taskMgr.add(self.tick, "tick_loop")
+        try:
+            self.joy = xbox.Joystick()
+            print "Controller initialized"
+        except:
+            pass
 
-        self.keypress_repeat("w", self.move_drone, ["x", 1])
-        self.keypress_repeat("s", self.move_drone, ["x", -1])
-        self.keypress_repeat("a", self.move_drone, ["y", 1])
-        self.keypress_repeat("d", self.move_drone, ["y", -1])
-        self.keypress_repeat("r", self.move_drone, ["z", 1])
-        self.keypress_repeat("f", self.move_drone, ["z", -1])
         self.keypress_repeat("4", self.move_camera, ["x", -1])
         self.keypress_repeat("6", self.move_camera, ["x", 1])
         self.keypress_repeat("8", self.move_camera, ["y", 1])
@@ -85,24 +86,69 @@ class World(ShowBase):
         if parameter[0] == "p":
             self.camera_position[4] += parameter[1]
 
-    def move_drone(self, axis, direction):
-        pass
-        '''
-        if axis == "x":
-            self.drone_position[0] += 5 * direction
-        if axis == "y":
-            self.drone_position[1] += 5 * direction
-        if axis == "z":
-            self.drone_position[2] += 1 * direction
-        if axis == "h":
-            self.drone_position[3] += direction
-        '''
+
+    def joy_block(self, xbox_key):
+        """ blocks the xbox key until it's released """
+        while xbox_key():
+            pass
 
     def tick(self, task):
 
         for key in self.active_keys:
             if self.active_keys[key] is not None:
                 self.active_keys[key][0](self.active_keys[key][1])
+
+        if self.joy is not None:
+            if self.joy.Back():
+                self.closeWindow(self)
+
+            # takeoff:
+            if self.joy.A():
+                print "takeoff"
+                self.drone_instance.takeoff()
+                self.joy_block(self.joy.A)
+
+            # emergency:
+            if self.joy.X():
+                print "emergency"
+                self.drone_instance.emergency()
+                self.joy_block(self.joy.X)
+
+            # emergency:
+            if self.joy.B():
+                print "land"
+                self.drone_instance.land()
+                self.joy_block(self.joy.B)
+
+            (roll, throttle) = self.joy.leftStick()
+            (yaw, pitch) = self.joy.rightStick()
+            self.drone_instance.move(roll, pitch, throttle, yaw)
+
+
+        # key = drone.get_key()
+        # if key == " ":
+        #     if not started:
+        #         drone.takeoff()
+        #     else:
+        #         drone.land()
+        # if key == "x":
+        #     drone.emergency()
+        # elif key == "0":
+        #     drone.hover()
+        # elif key == "c":
+        #     drone.move(0., 0., 0., 0.)
+        # elif key == "w":
+        #     drone.move(0., .2, 0., 0.)
+        # elif key == "s":
+        #     drone.move(0., -.2, 0., 0.)
+        # elif key == "a":
+        #     drone.move(-.2, 0., 0., 0.)
+        # elif key == "d":
+        #     drone.move(.2, 0., 0., 0.)
+        # elif key == "q":
+        #     drone.move(0., 0., 0., 0.2)
+        # elif key == "e":
+        #     drone.move(0., 0., 0., -0.2)
 
         if self.loop_callback is not None:
             self.loop_callback(self, task)
