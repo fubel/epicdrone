@@ -17,7 +17,7 @@ if __name__ == '__main__':
         orienation = orientation_by_imu(drone)
         print orienation
         drone.set_orientation( orienation )
-        #drone.set_position( position_by_velocity(drone) )
+        drone.set_position( position_by_velocity(drone, 1./60.) )
 
 
     world.hook_loop(sim_loop)

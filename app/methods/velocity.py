@@ -25,4 +25,4 @@ def position_by_velocity(drone, delta_t):
     return [
         drone.position[0] + velocity_norm[0] / 1000 * delta_t,
         drone.position[1] + velocity_norm[2] / 1000 * delta_t,
-        drone.position[2] + velocity_norm[1] / 1000 * delta_t]
+        drone.position[2] - velocity_norm[1] / 1000 * delta_t]
