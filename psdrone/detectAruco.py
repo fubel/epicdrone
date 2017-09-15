@@ -79,7 +79,10 @@ while(True):
             print("Camera Translation: %s" % camera_translation)
             print("TVECS: %s" % tvecs[i][0])
             print("APPROX: %s" % (marks[id] - tvecs[i][0]))
-
+            pitch = -np.arctan2(R[2,0], R[2,1])
+            yaw = np.arccos(R[2,2])
+            roll = -np.arctan2(R[0,2], R[1,2])
+            print pitch, yaw, roll
 
     cv2.imshow('frame',gray)
     if cv2.waitKey(1) and (drone.getKey() == ' '):

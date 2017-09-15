@@ -18,7 +18,7 @@ class World(ShowBase):
 
     fps_text = fps_text2 = fps_text3 = fps_text4 = None
     room_dimentions = [0, 0]
-    camera_position = [1468, 1177, 1160, -126, -38, 0]  # x y z h p r
+    camera_position = [1331, 991, 590, -126, -22, 0]  # x y z h p r
     drone = None
     drone_instance = None
     markers = {}
@@ -43,8 +43,36 @@ class World(ShowBase):
         self.wall3 = self.wall_model(width, length, 0, width, 180)
         self.wall4 = self.wall_model(width, length, 0, length, -90)
 
+        self.root_3d = self.marker_model(position=[0.,0.,0.], orientation=[90, 90, 0])
+
         self.drone = self.drone_model()
         self.drone_instance = Drone(simulation=simulation)
+
+        self.lx_drone = LineNodePath(self.render2d, 'box', 2)
+        self.lx_drone.reparentTo(self.drone)
+        self.lx_drone.setColor(1., 0., 0., 1.)
+        self.lx_drone.setTransparency(TransparencyAttrib.MAlpha)
+        self.lx_drone.setAlphaScale(0.5)
+        self.lx_drone.drawLines([[(0., 0., 0.),
+                         (4., 0., 0.)]])
+        self.lx_drone.create()
+        self.ly_drone = LineNodePath(self.render2d, 'box', 2)
+        self.ly_drone.reparentTo(self.drone)
+        self.ly_drone.setColor(0., 1., 0., 1.)
+        self.ly_drone.setTransparency(TransparencyAttrib.MAlpha)
+        self.ly_drone.setAlphaScale(0.5)
+        self.ly_drone.drawLines([[(0., 0., 0.),
+                         (0., 0., 4.)]])
+        self.ly_drone.create()
+        self.lz_drone = LineNodePath(self.render2d, 'box', 2)
+        self.lz_drone.reparentTo(self.drone)
+        self.lz_drone.setColor(0., 0., 1., 1.)
+        self.lz_drone.setTransparency(TransparencyAttrib.MAlpha)
+        self.lz_drone.setAlphaScale(0.5)
+        self.lz_drone.drawLines([[(0., 0., 0.),
+                         (0., 4., 0.)]])
+        self.lz_drone.create()
+
 
         try:
             self.joy = xbox.Joystick()
@@ -93,9 +121,9 @@ class World(ShowBase):
             self.drone_instance.move(0., .2, 0., 0.)
         elif key == "s":
             self.drone_instance.move(0., -.2, 0., 0.)
-        elif key == "d":
-            self.drone_instance.move(-.2, 0., 0., 0.)
         elif key == "a":
+            self.drone_instance.move(-.2, 0., 0., 0.)
+        elif key == "d":
             self.drone_instance.move(.2, 0., 0., 0.)
         elif key == "q":
             self.drone_instance.move(0., 0., 0., 0.2)
@@ -183,6 +211,7 @@ class World(ShowBase):
 
         drone_position = self.convert_position(self.drone_instance.get_position())
         drone_orientation = self.drone_instance.get_orientation()
+
         self.drone.setPos(drone_position[0], drone_position[1], drone_position[2])
         self.drone.setHpr(drone_orientation[0], drone_orientation[1], drone_orientation[2])
 

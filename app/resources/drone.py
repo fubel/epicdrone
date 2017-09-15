@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 class Drone(object):
 
     simulation = None
-    position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
+    position = [2.5, 0., 2.7] # x, z, y deault position somewhat center in the room
     orientation = [0, 0, 0] # heading, pitch, roll (angle in degrees)
     velocity = [0, 0, 0] # x,y,z in mm/s
     calib_ok = False
