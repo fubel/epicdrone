@@ -55,6 +55,7 @@ def measure(drone, markers=None):
             logging.info("Measurement to %s found: %s" % (id, (markers[id][0]-tvecs[i][0])))
     else:
         logging.info("No landmark measurement found")
+        return None
 
     cv2.imshow('frame', frame)
     cv2.waitKey(1)

@@ -232,6 +232,14 @@ class World(ShowBase):
                                           align=TextNode.ALeft,
                                           parent=self.a2dBottomLeft)
 
+            if self.fps_text3 is not None:
+                self.fps_text3.destroy()
+            self.fps_text3 = OnscreenText(text="Drone Position: " + str(self.drone_instance.get_position()),
+                                          pos=(0.05, 0.15),
+                                          scale=0.05,
+                                          align=TextNode.ALeft,
+                                          parent=self.a2dBottomLeft)
+
         return Task.cont
 
     def drone_model(self):
