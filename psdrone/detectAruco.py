@@ -49,8 +49,15 @@ while(True):
     tvecs = np.load('cam_broke_tvecs.npy')
 
     rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.25, mtx, dist, rvecs, tvecs)
-    if ids:
+
+    marks = {
+        1: np.array([2.95, 1.65, 2.85]),
+        3: np.array([2.05, 1.65, 2.85])
+    }
+    if type(ids) == np.ndarray:
+        merge = []
         for i, id in enumerate(ids):
+            id = id[0]
             gray = cv2.aruco.drawAxis(gray, mtx, dist, rvecs[i], tvecs[i], 0.25)
             """
             Use Rodrigues to convert the landmarks rotation vector into a 
@@ -68,6 +75,11 @@ while(True):
             camera_translation = -R.transpose().dot(tvecs[i][0].transpose())
             # camera position with respect to the landmark
             v = camera_rotation + camera_translation
+            print("Camera Rotation: %s" % camera_rotation)
+            print("Camera Translation: %s" % camera_translation)
+            print("TVECS: %s" % tvecs[i][0])
+            print("APPROX: %s" % (marks[id] - tvecs[i][0]))
+
 
     cv2.imshow('frame',gray)
     if cv2.waitKey(1) and (drone.getKey() == ' '):
