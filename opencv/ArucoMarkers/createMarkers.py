@@ -1,6 +1,6 @@
 import cv2
 
-idsToGenerate = [1, 2, 3, 4]
+idsToGenerate = range(5, 30)
 
 for id in idsToGenerate:
     markerDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_100)

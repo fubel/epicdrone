@@ -14,6 +14,8 @@ class Drone(object):
     position = [2, 1.5, 2] # x, z, y deault position somewhat center in the room
     orientation = [0, 0, 0] # heading, pitch, roll (angle in degrees)
     velocity = [0, 0, 0] # x,y,z in mm/s
+    calib_ok = False
+    magneto = [0,0,0] # x, y, z
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
     postion_by_input = False
@@ -110,6 +112,17 @@ class Drone(object):
             return np.array(self.velocity)
         else:
             return np.array(self.psdrone.NavData["demo"][4])
+
+    def get_magneto(self):
+        '''returns values from magentometer (x,y,z) and bool if calibration is ok'''
+        if self.simulation:
+            return np.append(np.array(self.magneto), np.array(self.calib_ok))
+        else:
+            raw_calib_ok = self.psdrone.NavData["magneto"][7]
+            calib_ok = False
+            if raw_calib_ok == 0:
+                calib_ok== True
+            return np.append(np.array(self.psdrone.NavData["magneto"][0]), np.array(calib_ok))
 
 if __name__ == '__main__':
     my_drone = Drone(simulation=True)
