@@ -54,7 +54,7 @@ class Drone(object):
             # start video stream (caution: we try HD here, that might not work well)
             if video:
                 self.psdrone.setConfigAllID()
-                self.psdrone.hdVideo()
+                self.psdrone.sdVideo()
                 self.psdrone.frontCam()
                 self.CDC = self.psdrone.ConfigDataCount
                 while self.CDC == self.psdrone.ConfigDataCount:

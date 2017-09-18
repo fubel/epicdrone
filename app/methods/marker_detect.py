@@ -51,8 +51,11 @@ def measure(drone, markers=None):
             id = id[0]
             gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 0.176)
             tvecs[i][0][1] *= -1
-            measurements.append(markers[id][0] - tvecs[i][0])
-            logging.info("Measurement to %s found: %s" % (id, (markers[id][0]-tvecs[i][0])))
+            try:
+                measurements.append(markers[id][0] - tvecs[i][0])
+                logging.info("Measurement to %s found: %s" % (id, (markers[id][0]-tvecs[i][0])))
+            except KeyError:
+                pass
     else:
         logging.info("No landmark measurement found")
         return None
