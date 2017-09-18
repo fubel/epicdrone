@@ -27,6 +27,9 @@ last_10 = [[],[],[]]
 
 
 def orientation_by_imu(drone):
+
+    return [drone.psdrone.NavData["demo"][2][2], drone.psdrone.NavData["demo"][2][0], drone.psdrone.NavData["demo"][2][1]]
+
     global _ax, _ay, _az
     global _gx, _gy, _gz
     global last_10

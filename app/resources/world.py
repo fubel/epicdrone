@@ -30,7 +30,7 @@ class World(ShowBase):
     simulation = True
     drone_started = False
 
-    def __init__(self, width = 6.78, length = 5.82, simulation=True):
+    def __init__(self, width = 6.78, length = 5.82, simulation=True, video=True):
         ShowBase.__init__(self)
 
         width *= 100
@@ -46,7 +46,7 @@ class World(ShowBase):
         self.root_3d = self.marker_model(position=[0.,0.,0.], orientation=[90, 90, 0])
 
         self.drone = self.drone_model()
-        self.drone_instance = Drone(simulation=simulation)
+        self.drone_instance = Drone(simulation=simulation, video=video)
 
         self.lx_drone = LineNodePath(self.render2d, 'box', 2)
         self.lx_drone.reparentTo(self.drone)
@@ -73,12 +73,18 @@ class World(ShowBase):
                          (0., 4., 0.)]])
         self.lz_drone.create()
 
-
         try:
             self.joy = xbox.Joystick()
-            print "Controller initialized"
+            joy_ready = False
+            if not self.joy.A():
+                joy_ready = True
+            if not joy_ready:
+                raise Exception("Joy not ready!")
+            else:
+                print("ready")
         except:
             pass
+
         # Add the spinCameraTask procedure to the task manager.
         self.tick_loop = self.taskMgr.add(self.tick, "tick_loop")
 
@@ -123,15 +129,15 @@ class World(ShowBase):
         elif key == "s":
             self.drone_instance.move(0., -.2, 0., 0.)
         elif key == "d":
-            self.drone_instance.move(-.2, 0., 0., 0.)
-        elif key == "a":
             self.drone_instance.move(.2, 0., 0., 0.)
+        elif key == "a":
+            self.drone_instance.move(-.2, 0., 0., 0.)
         elif key == "q":
             self.drone_instance.move(0., 0., 0., 0.2)
         elif key == "e":
             self.drone_instance.move(0., 0., 0., -0.2)
         elif key == "m":
-            self.drone.mtrim()
+            self.drone_instance.mtrim()
         elif key == "r":
             self.drone_instance.move(0., 0., .2, 0.)
         elif key == "f":
@@ -202,9 +208,6 @@ class World(ShowBase):
             (yaw, pitch) = self.joy.rightStick()
             print roll, pitch, throttle, yaw
             self.drone_instance.move(roll, pitch, throttle, yaw)
-
-
-
 
         if self.loop_callback is not None:
             self.loop_callback(self, task)
@@ -327,9 +330,7 @@ class World(ShowBase):
     def hook_loop(self, callback):
         self.loop_callback = callback
 
-    def shutdown(self):
-        if self.joy is not None:
-            self.joy.close()
+
 
 
 if __name__ == '__main__':

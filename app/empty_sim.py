@@ -7,7 +7,7 @@ from methods.velocity import position_by_velocity
 
 if __name__ == '__main__':
 
-    world = World(simulation=True)
+    world = World(simulation=False)
 
     # one marker in the middle of the four walls
     world.set_default_markers()
@@ -18,6 +18,7 @@ if __name__ == '__main__':
     drone.set_position_by_input(True)
 
     def sim_loop(world, task):
+        print(drone.psdrone.NavData["demo"][2])
         pass
 
 

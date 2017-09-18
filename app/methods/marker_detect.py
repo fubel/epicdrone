@@ -57,8 +57,8 @@ def measure(drone, markers=None):
         logging.info("No landmark measurement found")
         return None
 
-    cv2.imshow('frame', frame)
-    cv2.waitKey(1)
+    #cv2.imshow('frame', frame)
+    #cv2.waitKey(1)
 
     # fuse landmark measurements
     if len(measurements) == 0:

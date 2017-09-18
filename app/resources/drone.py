@@ -14,13 +14,14 @@ class Drone(object):
     position = [2.5, 0., 2.7] # x, z, y deault position somewhat center in the room
     orientation = [0, 0, 0] # heading, pitch, roll (angle in degrees)
     velocity = [0, 0, 0] # x,y,z in mm/s
+    input_velocity = [0, 0, 0, 0] # x,y,z,heading in mm/s
     calib_ok = False
     magneto = [0,0,0] # x, y, z
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
     postion_by_input = False
 
-    def __init__(self, simulation=True):
+    def __init__(self, simulation=True, video=True):
         # simulation flag
         self.simulation = simulation
 
@@ -51,14 +52,15 @@ class Drone(object):
                     raise Exception("No NavData")
 
             # start video stream (caution: we try HD here, that might not work well)
-            self.psdrone.setConfigAllID()
-            self.psdrone.hdVideo()
-            self.psdrone.frontCam()
-            self.CDC = self.psdrone.ConfigDataCount
-            while self.CDC == self.psdrone.ConfigDataCount:
-                time.sleep(0.0001)
-            self.psdrone.startVideo()
-            self.IMC = self.psdrone.VideoImageCount
+            if video:
+                self.psdrone.setConfigAllID()
+                self.psdrone.hdVideo()
+                self.psdrone.frontCam()
+                self.CDC = self.psdrone.ConfigDataCount
+                while self.CDC == self.psdrone.ConfigDataCount:
+                    time.sleep(0.0001)
+                self.psdrone.startVideo()
+                self.IMC = self.psdrone.VideoImageCount
 
 
     def startup(self):
@@ -73,12 +75,17 @@ class Drone(object):
         if not self.simulation:
             self.psdrone.emergency()
 
+    def mtrim(self):
+        if not self.simulation:
+            self.psdrone.mtrim()
+
     def land(self):
         if not self.simulation:
             self.psdrone.land()
 
     def move(self, leftright, backwardforward, downup, turnleftright):
         if not self.simulation:
+            self.input_velocity = [leftright, backwardforward, downup, turnleftright]
             self.psdrone.move(leftright, backwardforward, downup, turnleftright)
         else:
             self.orientation[0] += -turnleftright
@@ -116,6 +123,9 @@ class Drone(object):
             return np.array(self.velocity)
         else:
             return np.array(self.psdrone.NavData["demo"][4])
+
+    def get_input_velocity(self):
+        return self.input_velocity
 
     def get_magneto(self):
         '''returns values from magentometer (x,y,z) and bool if calibration is ok'''

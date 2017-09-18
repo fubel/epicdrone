@@ -1,5 +1,4 @@
 from __future__ import division
-
 import numpy as np
 
 
@@ -16,25 +15,13 @@ def get_rotation_matrix(drone):
     return np.array([rot_x, rot_y, rot_z])
 
 
-def position_by_velocity(drone, delta_t, position):
-    velocity_drone = drone.get_velocity()
+def position_by_velocity(drone, multiplier):
+    velocity_drone = np.array(drone.get_input_velocity()[0:3])
     rotation_matrix = get_rotation_matrix(drone)
 
     velocity_norm = velocity_drone.dot(rotation_matrix)
     print velocity_norm
     return [
-        position[0] + velocity_norm[0] / 1000 * delta_t,
-        position[1] + velocity_norm[2] / 1000 * delta_t,
-        position[2] - velocity_norm[1] / 1000 * delta_t]
-
-
-def measure_velocity(drone, delta_t):
-    velocity_drone = drone.get_velocity()
-    rotation_matrix = get_rotation_matrix(drone)
-
-    velocity_norm = velocity_drone.dot(rotation_matrix)
-    print velocity_norm
-    return [
-        velocity_norm[0] / 100,
-        velocity_norm[2] / 100,
-        -velocity_norm[1] / 100]
+        drone.position[0] + velocity_norm[0] * multiplier,
+        drone.position[1] + velocity_norm[2] * multiplier,
+        drone.position[2] - velocity_norm[1] * multiplier]
