@@ -125,23 +125,23 @@ class World(ShowBase):
         elif key == "c":
             self.drone_instance.move(0., 0., 0., 0.)
         elif key == "w":
-            self.drone_instance.move(0., .2, 0., 0.)
+            self.drone_instance.move(0., 0.08, 0., 0.)
         elif key == "s":
-            self.drone_instance.move(0., -.2, 0., 0.)
+            self.drone_instance.move(0., -0.08, 0., 0.)
         elif key == "d":
-            self.drone_instance.move(.2, 0., 0., 0.)
+            self.drone_instance.move(0.08, 0., 0., 0.)
         elif key == "a":
-            self.drone_instance.move(-.2, 0., 0., 0.)
+            self.drone_instance.move(-0.08, 0., 0., 0.)
         elif key == "q":
-            self.drone_instance.move(0., 0., 0., 0.2)
+            self.drone_instance.move(0., 0., 0., 0.3)
         elif key == "e":
-            self.drone_instance.move(0., 0., 0., -0.2)
+            self.drone_instance.move(0., 0., 0., -0.3)
         elif key == "m":
             self.drone_instance.mtrim()
         elif key == "r":
-            self.drone_instance.move(0., 0., .2, 0.)
+            self.drone_instance.move(0., 0., 0.14, 0.)
         elif key == "f":
-            self.drone_instance.move(0., 0., -.2, 0.)
+            self.drone_instance.move(0., 0., -0.15, 0.)
 
     def keypress_repeat(self, key, callback, parameter):
         self.accept(key, self.keypress_start, [key, callback, parameter])

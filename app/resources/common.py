@@ -31,7 +31,7 @@ class Marker(object):
         """
         with open(filename) as file:
             markers = {}
-            csv_reader = csv.reader(file, delimiter=';')
+            csv_reader = csv.DictReader(file, delimiter=';')
             for row in csv_reader:
                 markers[int(row['id'])] = [[float(row['position x']),
                                             float(row['position y']),

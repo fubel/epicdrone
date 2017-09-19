@@ -132,7 +132,7 @@ class Drone(object):
         if self.simulation:
             return self.altitude
         else:
-            return self.psdrone.NavData["altitude"]/1000 # returns altitude in m
+            return self.psdrone.NavData["altitude"][0]/1000 # returns altitude in m
 
     def get_magneto(self):
         '''returns values from magentometer (x,y,z) and bool if calibration is ok'''

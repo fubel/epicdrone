@@ -55,7 +55,7 @@ class Location_KF(KalmanFilter):
         self.Q = np.diag([0.5, 1.0, 0.5, 1.0, 1.0, 1.0])
 
         # measurement noise
-        self.R = np.diag([0.2, 0.2, 0.2, 2.0, 2.0, 2.0, 1.3, 1.3, 1.3, 0.5])
+        self.R = 8 * np.diag([0.2, 0.2, 0.2, 1.0, 1.0, 1.0, 1.3, 1.3, 1.3, 0.5])
 
         # covariance matrix
         self.P = np.diag([0.5, 0.5, 0.5, 1.0, 1.0, 1.0])
@@ -66,6 +66,7 @@ if __name__ == '__main__':
     world_dimensions = world.get_dimensions()
     markers = Marker.read('resources/room/markers.csv')
     world.set_markers(markers)
+    print(markers)
     delta_t = 1 / 10.
     epic_drone = world.get_drone()
     drone_KF = Location_KF(delta_t, epic_drone.get_position())
