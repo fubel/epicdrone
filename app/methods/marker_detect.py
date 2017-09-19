@@ -45,15 +45,27 @@ def measure(drone, markers=None):
     # detection
     corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
 
-    rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.176, mtx, dist, rvecs, tvecs)
+    rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, 0.10, mtx, dist, rvecs, tvecs)
     if type(ids) == np.ndarray:
         for i, id in enumerate(ids):
             id = id[0]
-            gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 0.176)
+            gray = cv2.aruco.drawAxis(frame, mtx, dist, rvecs[i][0], tvecs[i][0], 0.10)
             tvecs[i][0][1] *= -1
+            print('TVECS: %s' % tvecs[i][0])
+            print('MARKERS: %s' % markers[id][0])
             try:
-                measurements.append(markers[id][0] - tvecs[i][0])
-                logging.info("Measurement to %s found: %s" % (id, (markers[id][0]-tvecs[i][0])))
+                if markers[id][2] == 'S':
+                    j = [2, 1, 0]
+                    M = markers[id][0] + tvecs[i][0][j]
+                elif markers[id][2] == 'E':
+                    M = markers[id][0] + tvecs[i][0]
+                elif markers[id][2] == 'N':
+                    j = [2, 1, 0]
+                    M = markers[id][0] - tvecs[i][0][j]
+                elif markers[id][2] == 'W':
+                    M = markers[id][0] - tvecs[i][0]
+                measurements.append(M)
+                logging.info("Measurement to %s found: %s" % (id, (M)))
             except KeyError:
                 pass
     else:
