@@ -64,7 +64,7 @@ class Location_KF(KalmanFilter):
 if __name__ == '__main__':
     world = World(simulation=False)
     world_dimensions = world.get_dimensions()
-    markers = Marker.read('resources/room/markers.csv')
+    markers = Marker.read('/home/cp/PycharmProjects/epicdrone/app/resources/room/markers.csv')
     world.set_markers(markers)
     print(markers)
     delta_t = 1 / 10.

@@ -21,13 +21,11 @@ if __name__ == '__main__':
     def sim_loop(world, task):
         altitude = drone.get_altitude()
         print altitude
-        done = False
-        if not done:
-            if altitude < 1.0:
-                drone.psdrone.move(0., 0., .3, 0.)
-            else:
-                drone.psdrone.move(0., 0., .0, 0.)
-                done = True
+
+        if altitude < 1.2:
+            drone.psdrone.move(0., 0., .3, 0.)
+        else:
+            drone.psdrone.move(0., 0., .0, 0.)
 
     world.hook_loop(sim_loop)
 

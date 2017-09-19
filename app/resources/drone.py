@@ -133,7 +133,7 @@ class Drone(object):
             return self.altitude
         else:
             a1 = self.psdrone.NavData["kalman_pressure"][1] / 1000
-            if a1 == 0:
+            if a1 <= 0:
                 return 0
             a2 = self.psdrone.NavData["altitude"][0]/1000
             return (a1+a2)/2   # returns altitude in m
