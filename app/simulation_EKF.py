@@ -30,12 +30,12 @@ class Location_KF(KalmanFilter):
         my = 0.5
         mx = mz = 3.75
 
-        self.B = np.array([[mx*delta_t, 0, 0],
-                           [0, my*delta_t, 0],
-                           [0, 0, mz*delta_t],
-                           [0, 0, 0],
-                           [0, 0, 0],
-                           [0, 0, 0]])
+        #self.B = np.array([[mx*delta_t, 0, 0],
+        #                   [0, my*delta_t, 0],
+        #                   [0, 0, mz*delta_t],
+        #                   [0, 0, 0],
+        #                   [0, 0, 0],
+        #                   [0, 0, 0]])
 
 
         # measurement matrix
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     }
 
     world.set_markers(markers)
-    delta_t = 1/6.0 #s
+    delta_t = 1/10. 
     epic_drone = world.get_drone()
     drone_KF = Location_KF(delta_t, epic_drone.get_position())
     world.base_position_velocity = epic_drone.get_position()
@@ -92,15 +92,15 @@ if __name__ == '__main__':
     def sim_loop(world, task):
         if task.frame % 6 == 0:
             # uses previous state + time
-            u_raw = epic_drone.get_input_velocity()[0:3]
-            [h, p, r] = epic_drone.get_orientation()
-            u = np.array([u_raw[1]*np.sin(np.deg2rad(h)), u_raw[2], u_raw[0]*np.cos(np.deg2rad(h))])
-            drone_KF.predict(u=u)
+            #u_raw = epic_drone.get_input_velocity()[0:3]
+            #[h, p, r] = epic_drone.get_orientation()
+            #u = np.array([u_raw[1]*np.sin(np.deg2rad(h)), u_raw[2], u_raw[0]*np.cos(np.deg2rad(h))])
+            drone_KF.predict()
             if task.frame % 300 == 0:
                 world.base_position_velocity = drone_KF.x
             velocities = measure_velocity(epic_drone, delta_t)
             position_landmarks = measure(epic_drone, markers=markers)
-            world.base_position_velocity = position_velo = position_by_velocity(epic_drone, 1./6, world.base_position_velocity)
+            world.base_position_velocity = position_velo = position_by_velocity(epic_drone, 1./10, world.base_position_velocity)
 
             print(position_velo, position_landmarks, velocities)
             if position_landmarks is None:
