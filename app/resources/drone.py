@@ -20,6 +20,7 @@ class Drone(object):
     _ax = _ay = _az = 0.0
     _gx = _gy = _gz = 0.0
     postion_by_input = False
+    altitude = 0
 
     def __init__(self, simulation=True, video=True):
         # simulation flag
@@ -126,6 +127,12 @@ class Drone(object):
 
     def get_input_velocity(self):
         return self.input_velocity
+
+    def get_altitude(self):
+        if self.simulation:
+            return self.altitude
+        else:
+            return self.psdrone.NavData["altitude"]/1000 # returns altitude in m
 
     def get_magneto(self):
         '''returns values from magentometer (x,y,z) and bool if calibration is ok'''
