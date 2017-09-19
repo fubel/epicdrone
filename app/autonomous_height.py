@@ -19,13 +19,15 @@ if __name__ == '__main__':
     drone.set_position_by_input(True)
 
     def sim_loop(world, task):
-        if drone.get_altitude() < 1.5:
-            drone.psdrone.move(0., 0., .4, 0.)
-
-        drone.psdrone.land()
-
-        #print(drone.psdrone.NavData["demo"][2])
-        pass
+        altitude = drone.get_altitude()
+        print altitude
+        done = False
+        if not done:
+            if altitude < 1.0:
+                drone.psdrone.move(0., 0., .3, 0.)
+            else:
+                drone.psdrone.move(0., 0., .0, 0.)
+                done = True
 
     world.hook_loop(sim_loop)
 
