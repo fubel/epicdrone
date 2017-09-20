@@ -9,6 +9,7 @@ from filterpy.kalman import KalmanFilter
 from methods.velocity import measure_velocity, position_by_velocity
 from methods.marker_detect import measure
 matplotlib.rcParams['backend'] = "TkAgg"
+from methods.orientation import orientation_by_imu
 from resources.world import World
 
 class Location_KF(KalmanFilter):
@@ -22,7 +23,7 @@ class Location_KF(KalmanFilter):
 
         # state transition matrix
         self.F = np.array([[1.,0.,0.,delta_t,0.,0.],
-                            [0.,1.,0.,0.,delta_t,0.],
+                            [0.,1.,0.,0.,0.,0.],
                             [0.,0.,1.,0.,0.,delta_t],
                             [0.,0.,0.,1.,0.,0.],
                             [0.,0.,0.,0.,1.,0.],
@@ -41,10 +42,10 @@ class Location_KF(KalmanFilter):
 
         # measurement matrix
         self.H = np.array([[1., 0., 0., 0., 0., 0.],
-                           [0., 1., 0., 0., 0., 0.],
+                           [0., 0., 0., 0., 0., 0.],
                            [0., 0., 1., 0., 0., 0.],
                            [1., 0., 0., 0., 0., 0.],
-                           [0., 1., 0., 0., 0., 0.],
+                           [0., 0., 0., 0., 0., 0.],
                            [0., 0., 1., 0., 0., 0.],
                            [0., 0., 0., 1., 0., 0.],
                            [0., 0., 0., 0., 1., 0.],
@@ -64,7 +65,7 @@ class Location_KF(KalmanFilter):
 if __name__ == '__main__':
     world = World(simulation=False)
     world_dimensions = world.get_dimensions()
-    markers = Marker.read('/home/cp/PycharmProjects/epicdrone/app/resources/room/markers.csv')
+    markers = Marker.read('resources/room/markers.csv')
     world.set_markers(markers)
     print(markers)
     delta_t = 1 / 10.
@@ -100,6 +101,9 @@ if __name__ == '__main__':
             # update with measurements
             drone_KF.update(measurement)
             logging.info("STATE: %s" % drone_KF.x)
+
+            orientation = orientation_by_imu(epic_drone)
+            epic_drone.set_orientation(orientation)
 
             # set position for 3D visuals:
             epic_drone.set_position(drone_KF.x[0:3])

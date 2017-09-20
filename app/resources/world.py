@@ -18,7 +18,7 @@ class World(ShowBase):
 
     fps_text = fps_text2 = fps_text3 = fps_text4 = None
     room_dimentions = [0, 0]
-    camera_position = [1331, 991, 590, -126, -22, 0]  # x y z h p r
+    camera_position = [290., 1609., 370, -1980, -15, 0]  # x y z h p r
     drone = None
     drone_instance = None
     markers = {}
